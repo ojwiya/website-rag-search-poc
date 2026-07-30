@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Property Search — Design Prototype</title>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600&family=Source+Code+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* === DESIGN TOKENS (Stripe system + youroverseashome.com blue palette) === */
+    :root {
+      /* Colors — youroverseashome.com palette with Stripe shadow system */
+      --color-bg: #ffffff;
+      --color-page-bg: #F8FAFC; /* gray-50 / sky-50 blend */
+      --color-surface: #ffffff;
+      --color-accent: #2563EB;     /* blue-600 — primary */
+      --color-accent-hover: #1D4ED8; /* blue-700 */
+      --color-accent-light: #EFF6FF;  /* blue-50 */
+      --color-accent-ring: #BFDBFE;   /* blue-200 */
+      --color-heading: #061b31;        /* deep navy — Stripe */
+      --color-body: #374151;           /* gray-700 */
+      --color-muted: #6B7280;          /* gray-500 */
+      --color-border: #E5E7EB;         /* gray-200 — Stripe border */
+      --color-border-input: #D1D5DB;   /* gray-300 */
+      --color-price: #2563EB;          /* blue-600 */
+      --color-location: #6B7280;       /* gray-500 */
+      --color-shadow-primary: rgba(50, 50, 93, 0.25);
+      --color-shadow-secondary: rgba(0, 0, 0, 0.1);
+      --color-shadow-ambient: rgba(23, 23, 23, 0.08);
+
+      /* Typography */
+      --font-primary: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'Source Code Pro', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --weight-heading: 300;
+      --weight-body: 400;
+      --weight-button: 400;
+      --tracking-display: -0.02em;
+      --tracking-body: normal;
+
+      /* Spacing (8px base) */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-10: 40px;
+      --space-12: 48px;
+
+      /* Radii */
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+
+      /* Shadows */
+      --shadow-card: var(--color-shadow-primary) 0px 30px 45px -30px, var(--color-shadow-secondary) 0px 18px 36px -18px;
+      --shadow-card-hover: var(--color-shadow-primary) 0px 36px 52px -28px, var(--color-shadow-secondary) 0px 24px 42px -18px;
+      --shadow-sm: var(--color-shadow-ambient) 0px 3px 6px;
+
+      /* Layout */
+      --max-width: 1200px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-primary);
+      font-weight: var(--weight-body);
+      color: var(--color-body);
+      background: var(--color-page-bg);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* === HEADER === */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--color-bg);
+      border-bottom: 1px solid var(--color-border);
+      backdrop-filter: blur(8px);
+    }
+    .header-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: var(--space-4) var(--space-6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .logo {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--color-accent);
+      letter-spacing: -0.01em;
+      text-decoration: none;
+    }
+    .nav {
+      display: flex;
+      gap: var(--space-6);
+      align-items: center;
+    }
+    .nav-link {
+      font-size: 14px;
+      font-weight: var(--weight-body);
+      color: var(--color-heading);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .nav-link:hover { color: var(--color-accent); }
+
+    /* === HERO SEARCH === */
+    .hero {
+      background: var(--color-bg);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--space-12) var(--space-6);
+      text-align: center;
+    }
+    .hero-title {
+      font-size: 42px;
+      font-weight: var(--weight-heading);
+      color: var(--color-heading);
+      letter-spacing: var(--tracking-display);
+      line-height: 1.15;
+      margin-bottom: var(--space-4);
+    }
+    .hero-subtitle {
+      font-size: 18px;
+      font-weight: 300;
+      color: var(--color-muted);
+      margin-bottom: var(--space-8);
+      max-width: 560px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .search-bar {
+      max-width: 640px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .search-bar input {
+      width: 100%;
+      padding: 14px 16px 14px 44px;
+      font-family: var(--font-primary);
+      font-size: 16px;
+      border: 1px solid var(--color-border-input);
+      border-radius: var(--radius-md);
+      background: var(--color-bg);
+      color: var(--color-heading);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+    .search-bar input:focus {
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px var(--color-accent-ring);
+    }
+    .search-bar input::placeholder { color: var(--color-muted); }
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-accent);
+      pointer-events: none;
+    }
+
+    /* === FILTERS === */
+    .filters {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: var(--space-6) var(--space-6);
+      display: flex;
+      gap: var(--space-4);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .filter-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .filter-select, .filter-input {
+      padding: 8px 12px;
+      font-family: var(--font-primary);
+      font-size: 14px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      background: var(--color-bg);
+      color: var(--color-heading);
+      outline: none;
+    }
+    .filter-select:focus, .filter-input:focus {
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 2px var(--color-accent-ring);
+    }
+    .sort-icon {
+      color: var(--color-accent);
+    }
+
+    /* === RESULTS COUNT === */
+    .results-header {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: var(--space-2) var(--space-6) var(--space-6);
+      font-size: 14px;
+      color: var(--color-muted);
+    }
+    .results-header strong {
+      color: var(--color-heading);
+    }
+
+    /* === PROPERTY GRID === */
+    .grid {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 var(--space-6);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-6);
+    }
+
+    /* === PROPERTY CARD === */
+    .card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: box-shadow 0.2s, transform 0.2s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+    }
+    .card:hover {
+      box-shadow: var(--shadow-card-hover);
+      transform: translateY(-2px);
+    }
+    .card-image {
+      width: 100%;
+      aspect-ratio: 16/10;
+      object-fit: cover;
+      background: var(--color-page-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-muted);
+      font-size: 13px;
+    }
+    .card-body {
+      padding: var(--space-5);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: var(--weight-heading);
+      color: var(--color-heading);
+      letter-spacing: var(--tracking-display);
+      line-height: 1.3;
+      margin-bottom: var(--space-2);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-location {
+      font-size: 13px;
+      color: var(--color-location);
+      margin-bottom: var(--space-3);
+    }
+    .card-specs {
+      display: flex;
+      gap: var(--space-4);
+      margin-bottom: var(--space-3);
+      font-size: 13px;
+      color: var(--color-muted);
+    }
+    .card-spec {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+    }
+    .card-price {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--color-price);
+    }
+    .card-share {
+      background: none;
+      border: none;
+      color: var(--color-muted);
+      cursor: pointer;
+      padding: var(--space-2);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .card-share:hover {
+      color: var(--color-accent);
+      background: var(--color-accent-light);
+    }
+
+    /* === PAGINATION === */
+    .pagination {
+      max-width: var(--max-width);
+      margin: var(--space-10) auto;
+      padding: 0 var(--space-6);
+      display: flex;
+      justify-content: center;
+      gap: var(--space-2);
+      align-items: center;
+    }
+    .page-btn {
+      padding: 8px 16px;
+      font-family: var(--font-primary);
+      font-size: 14px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      background: var(--color-bg);
+      color: var(--color-heading);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .page-btn:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+    .page-btn.active {
+      background: var(--color-accent);
+      color: white;
+      border-color: var(--color-accent);
+    }
+    .page-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    /* === DETAIL PAGE === */
+    .detail {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: var(--space-8) var(--space-6);
+    }
+    .detail-back {
+      font-size: 14px;
+      color: var(--color-accent);
+      text-decoration: none;
+      margin-bottom: var(--space-6);
+      display: inline-block;
+    }
+    .detail-back:hover { text-decoration: underline; }
+    .detail-hero {
+      width: 100%;
+      aspect-ratio: 16/7;
+      object-fit: cover;
+      border-radius: var(--radius-lg);
+      background: var(--color-page-bg);
+      margin-bottom: var(--space-6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-muted);
+      font-size: 14px;
+    }
+    .detail-title {
+      font-size: 32px;
+      font-weight: var(--weight-heading);
+      color: var(--color-heading);
+      letter-spacing: var(--tracking-display);
+      line-height: 1.2;
+      margin-bottom: var(--space-3);
+    }
+    .detail-location {
+      font-size: 16px;
+      color: var(--color-location);
+      margin-bottom: var(--space-6);
+    }
+    .detail-price {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--color-price);
+      margin-bottom: var(--space-6);
+    }
+    .detail-specs {
+      display: flex;
+      gap: var(--space-6);
+      margin-bottom: var(--space-6);
+      flex-wrap: wrap;
+    }
+    .detail-spec {
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-page-bg);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+    }
+    .detail-spec strong {
+      color: var(--color-heading);
+      display: block;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .detail-description {
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--color-body);
+      margin-bottom: var(--space-6);
+    }
+    .detail-actions {
+      display: flex;
+      gap: var(--space-3);
+    }
+    .btn {
+      padding: 10px 20px;
+      font-family: var(--font-primary);
+      font-size: 14px;
+      font-weight: var(--weight-button);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    .btn-primary {
+      background: var(--color-accent);
+      color: white;
+    }
+    .btn-primary:hover { background: var(--color-accent-hover); }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--color-border);
+      color: var(--color-heading);
+    }
+    .btn-ghost:hover { border-color: var(--color-accent); color: var(--color-accent); }
+
+    /* === FAQ SECTION === */
+    .faq {
+      max-width: var(--max-width);
+      margin: var(--space-12) auto;
+      padding: var(--space-8) var(--space-6);
+      border-top: 1px solid var(--color-border);
+    }
+    .faq-title {
+      font-size: 24px;
+      font-weight: var(--weight-heading);
+      color: var(--color-heading);
+      margin-bottom: var(--space-6);
+    }
+    .faq-item {
+      padding: var(--space-4) 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .faq-question {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--color-heading);
+      margin-bottom: var(--space-2);
+    }
+    .faq-answer {
+      font-size: 14px;
+      color: var(--color-muted);
+      line-height: 1.6;
+    }
+
+    /* === FOOTER === */
+    .footer {
+      border-top: 1px solid var(--color-border);
+      padding: var(--space-8) var(--space-6);
+      text-align: center;
+      font-size: 13px;
+      color: var(--color-muted);
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 1024px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .hero-title { font-size: 32px; }
+    }
+    @media (max-width: 640px) {
+      .grid { grid-template-columns: 1fr; }
+      .hero-title { font-size: 26px; }
+      .hero-subtitle { font-size: 16px; }
+      .header-inner { height: auto; padding: var(--space-3) var(--space-4); flex-wrap: wrap; }
+      .nav { gap: var(--space-3); }
+      .detail-title { font-size: 24px; }
+      .detail-specs { gap: var(--space-3); }
+      .filters { flex-direction: column; align-items: flex-start; }
+    }
+
+    /* === DECREASED MOTION === */
+    @media (prefers-reduced-motion: reduce) {
+      .card { transition: none; }
+      .card:hover { transform: none; }
+      .nav-link { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="logo">Property Search</a>
+      <nav class="nav">
+        <a href="#" class="nav-link">Browse</a>
+        <a href="#" class="nav-link">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1 class="hero-title">Find your dream property</h1>
+    <p class="hero-subtitle">Search thousands of properties with natural language. Browse listings, compare details, and find the perfect home.</p>
+    <div class="search-bar">
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+      <input type="text" id="searchInput" placeholder="Search by location, price, or features..." autocomplete="off">
+    </div>
+  </section>
+
+  <!-- FILTERS -->
+  <div class="filters">
+    <div class="filter-group">
+      <span class="filter-label">Sort by</span>
+      <select class="filter-select" id="sortSelect">
+        <option value="recent">Recently Added</option>
+        <option value="price-asc">Price: Low to High</option>
+        <option value="price-desc">Price: High to Low</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Max Price</span>
+      <input type="text" class="filter-input" id="priceMax" placeholder="€500,000" style="width:140px">
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Bedrooms</span>
+      <select class="filter-select" id="bedsFilter">
+        <option value="">Any</option>
+        <option value="1">1+</option>
+        <option value="2">2+</option>
+        <option value="3">3+</option>
+        <option value="4">4+</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- RESULTS COUNT -->
+  <div class="results-header">
+    Showing <strong id="resultCount">0</strong> properties
+  </div>
+
+  <!-- PROPERTY GRID -->
+  <main class="grid" id="propertyGrid">
+    <!-- Cards rendered by JS -->
+  </main>
+
+  <!-- PAGINATION -->
+  <div class="pagination" id="pagination">
+    <button class="page-btn" disabled>← Previous</button>
+    <button class="page-btn active">1</button>
+    <button class="page-btn">2</button>
+    <button class="page-btn">3</button>
+    <button class="page-btn">Next →</button>
+  </div>
+
+  <!-- FAQ -->
+  <section class="faq">
+    <h2 class="faq-title">Frequently asked questions</h2>
+    <div class="faq-item">
+      <div class="faq-question">How do I search for properties?</div>
+      <div class="faq-answer">Use the search bar at the top to type a natural language query like "3 bedroom villa near beach under €500k" or use the filter controls to narrow by price and bedrooms.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question">Can I view property details?</div>
+      <div class="faq-answer">Click any property card to see the full detail page with description, all specifications, and share options.</div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    Property Search MVP — Built with Next.js + FastAPI + Stripe design tokens
+  </footer>
+
+  <script>
+    // === MOCK DATA for design prototype ===
+    const properties = [
+      { id: 1, title: "Apartment in Riviera del Sol", location: "Riviera del Sol, Andalusia", price: 449000, beds: 3, baths: 2, size: 104, type: "Apartment", description: "Bright seaside apartment with south-facing terrace, sea view, three spacious bedrooms, two bathrooms, open-plan living with kitchen, private parking, pool, tennis court, and playground." },
+      { id: 2, title: "Villa in Torreblanca", location: "Torreblanca, Andalusia", price: 395000, beds: 3, baths: 3, size: 133, type: "Villa", description: "Unique renovation opportunity with tropical gardens, sea views, swimming pool, and development potential in Fuengirola. 800m from beach." },
+      { id: 3, title: "Apartment in Marbella", location: "Marbella, Costa del Sol", price: 419000, beds: 3, baths: 2, size: 90, type: "Apartment", description: "Central apartment on Calle Jacinto Benavente, 90m², three bedrooms, two bathrooms, excellent natural light, walking distance to services and beach." },
+      { id: 4, title: "Apartment in Nueva Andalucia", location: "Nueva Andalucia, Marbella", price: 675000, beds: 3, baths: 2, size: 111, type: "Apartment", description: "Premium apartment with panoramic La Concha mountain views, heated pool, two communal pools, private garage, 10-min walk to beach." },
+      { id: 5, title: "Apartment in Torrevieja", location: "Torrevieja, Costa Blanca", price: 167000, beds: 2, baths: 1, size: 100, type: "Apartment", description: "Fantastic apartment 50m from Acequión Beach, 2 bedrooms, 1 bathroom, terrace, garage included, 100m² living space." },
+      { id: 6, title: "Modern Apartment in Marbella Centre", location: "Marbella, Costa del Sol", price: 425000, beds: 2, baths: 2, size: 77, type: "Apartment", description: "Beautifully renovated second-floor apartment with elevator, two bedrooms, two bathrooms, modern kitchen open to living room, small terrace." },
+      { id: 7, title: "Villa in Sierra Blanca", location: "Sierra Blanca, Andalusia", price: 895000, beds: 4, baths: 3, size: 220, type: "Villa", description: "Luxury villa with panoramic mountain and sea views, private pool, mature gardens, tennis court, guest house, in a prestigious residential area." },
+      { id: 8, title: "Penthouse in Puerto Banús", location: "Puerto Banús, Marbella", price: 1250000, beds: 3, baths: 2, size: 165, type: "Penthouse", description: "Stunning penthouse with private rooftop terrace, Mediterranean views, 3 bedrooms, 2 bathrooms, garage, walk to Puerto Banús marina and restaurants." },
+      { id: 9, title: "Cottage in Frigiliana", location: "Frigiliana, Andalusia", price: 189000, beds: 2, baths: 1, size: 85, type: "Cottage", description: "Charming whitewashed cottage with courtyard, mountain views, near Nerja caves and beaches, traditional Andalusian architecture." },
+    ];
+
+    // === RENDER FUNCTIONS ===
+    function formatPrice(price) {
+      return '€' + price.toLocaleString('en-US');
+    }
+
+    function renderCard(prop) {
+      return `
+        <a href="/properties/${prop.id}" class="card">
+          <div class="card-image">
+            <span>Photo</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">${prop.title}</h3>
+            <div class="card-location">${prop.location}</div>
+            <div class="card-specs">
+              <span class="card-spec"><strong>${prop.beds}</strong> bed</span>
+              <span class="card-spec"><strong>${prop.baths}</strong> bath</span>
+              <span class="card-spec"><strong>${prop.size}</strong> m²</span>
+            </div>
+            <div class="card-footer">
+              <span class="card-price">${formatPrice(prop.price)}</span>
+              <button class="card-share" title="Share" aria-label="Share property">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
+              </button>
+            </div>
+          </div>
+        </a>
+      `;
+    }
+
+    function renderGrid(propertiesToRender) {
+      const grid = document.getElementById('propertyGrid');
+      const count = document.getElementById('resultCount');
+      grid.innerHTML = propertiesToRender.map(renderCard).join('');
+      count.textContent = propertiesToRender.length;
+    }
+
+    // === SEARCH ===
+    const searchInput = document.getElementById('searchInput');
+    let debounceTimeout;
+    searchInput.addEventListener('input', function() {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(function() {
+        const q = searchInput.value.toLowerCase();
+        if (!q.trim()) {
+          renderGrid(properties);
+          return;
+        }
+        const filtered = properties.filter(function(p) {
+          return p.title.toLowerCase().includes(q) ||
+                 p.location.toLowerCase().includes(q) ||
+                 p.description.toLowerCase().includes(q) ||
+                 p.type.toLowerCase().includes(q);
+        });
+        renderGrid(filtered);
+      }, 300);
+    });
+
+    // === SORT ===
+    document.getElementById('sortSelect').addEventListener('change', function() {
+      const val = this.value;
+      let sorted = properties.slice();
+      if (val === 'price-asc') sorted.sort(function(a, b) { return a.price - b.price; });
+      if (val === 'price-desc') sorted.sort(function(a, b) { return b.price - a.price; });
+      renderGrid(sorted);
+    });
+
+    // === BEDROOMS FILTER ===
+    document.getElementById('bedsFilter').addEventListener('change', function() {
+      const minBeds = parseInt(this.value) || 0;
+      const priceMax = parseInt(document.getElementById('priceMax').value.replace(/[^0-9]/g, '')) || Infinity;
+      const filtered = properties.filter(function(p) {
+        return p.beds >= minBeds && p.price <= priceMax;
+      });
+      renderGrid(filtered);
+    });
+
+    // === PRICE MAX FILTER ===
+    document.getElementById('priceMax').addEventListener('input', function() {
+      const priceMax = parseInt(this.value.replace(/[^0-9]/g, '')) || Infinity;
+      const minBeds = parseInt(document.getElementById('bedsFilter').value) || 0;
+      const filtered = properties.filter(function(p) {
+        return p.beds >= minBeds && p.price <= priceMax;
+      });
+      renderGrid(filtered);
+    });
+
+    // === INIT ===
+    renderGrid(properties);
+  </script>
+
+</body>
+</html>
