@@ -1,45 +1,51 @@
 # Session Checkpoint — website-rag-search-poc
-## 2026-07-30 17:18 GMT+1
+## 2026-07-31 04:01 GMT+1 (override session)
 
 ### Context Summary
-This session established the complete planning/wf foundation for the MVP. A new session can pick up from where it left off by reading this file.
+This session established the complete planning/wf foundation for the MVP and began scaffolding the Next.js app. A new session can pick up from here.
 
 ### Decisions (confirmed by user)
 - Repo name: `website-rag-search-poc` (GitHub: `ojwiya/website-rag-search-poc`)
-- Tech stack: Fast JavaScript framework (Next.js 14+ App Router, TypeScript, Tailwind CSS)
-- Design base: Stripe (popular-web-designs) — but palette overridden with youroverseashome.com blue (#2563EB primary)
+- Tech stack: Next.js 14+ App Router, TypeScript, Tailwind CSS
+- Design base: Stripe (popular-web-designs) — palette overridden with youroverseashome.com blue (#2563EB primary)
 - Deployment: Vercel
 - RAG: Reuse existing `rag_pipeline.py` + `properties_data.json` + `chroma_db/` from `~/Documents/sc-ai/`. No rescraping.
 - Focus: UI and UX improvement over youroverseashome.com
 
-### What was done in this session (checkpoint)
-1. **GitHub repo created and cloned** — `https://github.com/ojwiya/website-rag-search-poc` at `~/Documents/projects/website-rag-search-poc/`
-2. **to-spec** — `docs/plans/2026-07-30-mvp-spec.md` written (problem, solution, 12 user stories, architecture, out of scope)
-3. **to-tickets** — `docs/plans/2026-07-30-tickets.md` written (8 tracer-bullet tickets: scaffold, FastAPI, cards, homepage, detail, deploy, polish, design handoff)
-4. **claude-design** — Applied Explore + Inspect surfaces, youroverseashome.com palette, Stripe shadows/typography
-5. **popular-web-designs** — Stripe template loaded, tokens extracted, palette overridden to blue
-6. **Design prototype** — `docs/design-property-search.html` (self-contained HTML with mock data, search, filters, sort, cards)
-7. **Design notes** — `docs/design-prototype-notes.md` (design decisions, slop audit scored 0/10)
-8. **Initial commit pushed to GitHub** — commit `0592612`
-9. **Vercel deployment plan** — not yet written to disk
+### Current Status
+- GitHub repo cloned at `~/Documents/projects/website-rag-search-poc/`
+- Spec written: `docs/plans/2026-07-30-mvp-spec.md`
+- Tickets written: `docs/plans/2026-07-30-tickets.md` (8 tickets)
+- Design prototype: `docs/design-property-search.html` (verified 0/10 slop)
+- Deployment plan: `docs/plans/2026-07-30-deployment.md`
+- Next.js scaffold in progress:
+  - `package.json` created ✓
+  - `tsconfig.json` created ✓
+  - `next.config.js` created (was `.ts`, renamed to `.js`) ✓
+  - `postcss.config.js` created ✓
+  - `tailwind.config.ts` created ✓
+  - `app/layout.tsx` created ✓
+  - `app/page.tsx` created ✓
+  - `app/globals.css` created ✓
+  - `npm install` completed ✓ (388 packages)
+  - `npm run dev` started as background process (proc_35877ddf70c4)
+  - NOTE: The dev server log only shows 3 lines so far — may still be starting up or may have errored silently. The `next.config.ts` → `next.config.js` rename plus `rm` of old ts file happened in same command. Need to check if server is actually running.
+  - The `tailwind.config.ts` file still has a `.ts` extension which may cause issues with some tooling, but Next.js doesn't care about the tailwind config extension.
 
-### Files created
-- `docs/plans/2026-07-30-mvp-spec.md` — MVP spec
-- `docs/plans/2026-07-30-tickets.md` — Tracer-bullet tickets (8 tickets)
-- `docs/design-property-search.html` — UI prototype (self-contained HTML)
-- `docs/design-prototype-notes.md` — Design rationale + slop audit
+### Action needed NOW (in this session)
+1. Check if Next.js dev server is actually running: `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000`
+2. If not running (exit code or error), the `next.config.js` needs to work properly — the rename from `.ts` should have fixed the "Configuring Next.js via next.config.ts" error.
+3. If server is running (HTTP 200), proceed to next steps.
 
-### Next session: what to do
-Continue from ticket 01 (Next.js scaffold). Steps:
-1. Plan Vercel deployment config (vercel.json, etc.) — write to docs/deployment.md
-2. Execute subagent-driven-development starting with ticket 01
-3. Generate the Vercel config and initial Next.js app scaffold
-
-### State of work
-- Tickets 01-08 defined and documented
-- No code implemented yet (next session does this)
-- Design artifact is complete and verified (0 slop)
-- RAG pipeline details documented for the FastAPI wrapper
+### Remaining work after dev server verified
+- Ticket 01 complete (Next.js + Tailwind + shadcn/ui)
+- Ticket 02: FastAPI API routes (or Next.js API routes — migration plan uses Next.js routes for MVP)
+- Ticket 03: PropertyCard component
+- Ticket 04: Homepage with search, filters, sort, property grid
+- Ticket 05: Detail page at `/properties/[id]`
+- Ticket 06: Vercel deployment config + verified deploy
+- Ticket 07: Visual polish and slop audit
+- Ticket 08: Design handoff artifact
 
 ### References
 - Existing RAG repo: `~/Documents/sc-ai/` (rag_pipeline.py, scrape.py, normalize_data.py)
