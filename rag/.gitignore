@@ -1,0 +1,7 @@
+# RAG data — copied from ~/Documents/sc-ai/ (existing POC, no rescraping)
+# chroma_db/ is gitignored (101M) — it's rebuilt on first API call or at deploy time
+rag_pipeline.py
+chroma_db/
+*.bin
+*.pkl
+__pycache__/
