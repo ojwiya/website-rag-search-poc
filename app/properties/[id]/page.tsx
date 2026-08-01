@@ -10,8 +10,8 @@ export default async function PropertyDetail({ params }: { params: { id: string 
     return (
       <main className="min-h-screen bg-surface-alt flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-heading text-heading mb-2">Property not found</h1>
-          <Link href="/" className="text-primary-600 hover:underline">← Back to search</Link>
+          <h1 className="text-2xl font-bold text-heading mb-2">Property not found</h1>
+          <Link href="/" className="text-rausch hover:underline font-medium">← Back to search</Link>
         </div>
       </main>
     );
@@ -22,22 +22,34 @@ export default async function PropertyDetail({ params }: { params: { id: string 
   const price = `${symbol}${property.price.toLocaleString('en-US')}`;
   const type = property.title.split(' in ')[0] || 'Property';
 
+  const specs = [
+    { label: 'Bedrooms', value: property.bedrooms ?? '—' },
+    { label: 'Bathrooms', value: property.bathrooms ?? '—' },
+    ...(property.buildSize ? [{ label: 'Build m²', value: property.buildSize }] : []),
+    ...(property.plotSize ? [{ label: 'Plot m²', value: property.plotSize }] : []),
+    { label: 'Type', value: type },
+  ];
+
   return (
     <main className="min-h-screen bg-surface-alt">
-      <header className="sticky top-0 z-50 bg-surface border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <a href="/" className="text-2xl font-semibold text-primary-600 tracking-tight">Property Search</a>
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-surface border-b border-borderSoft">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <a href="/" className="text-2xl font-extrabold text-rausch tracking-tight">
+            property<span className="text-heading">search</span>
+          </a>
           <nav className="flex gap-6">
-            <a href="#" className="text-sm font-body text-heading hover:text-primary-600 transition-colors">Browse</a>
-            <a href="#" className="text-sm font-body text-heading hover:text-primary-600 transition-colors">About</a>
+            <a href="#" className="text-sm font-medium text-heading hover:text-rausch transition-colors">Browse</a>
+            <a href="#" className="text-sm font-medium text-heading hover:text-rausch transition-colors">About</a>
           </nav>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <Link href="/" className="text-sm text-primary-600 hover:underline mb-6 inline-block">← Back to search</Link>
+      <div className="max-w-6xl mx-auto px-6 py-6">
+        <Link href="/" className="text-sm font-medium text-heading hover:text-rausch mb-5 inline-block">← Back to search</Link>
 
-        <div className="relative aspect-[16/7] bg-surface-alt rounded-lg overflow-hidden mb-8">
+        {/* Gallery — Airbnb rounded corners */}
+        <div className="relative aspect-[16/9] bg-surface rounded-lg overflow-hidden">
           {property.thumbnail_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={property.thumbnail_url} alt={property.title} className="w-full h-full object-cover" />
@@ -45,54 +57,41 @@ export default async function PropertyDetail({ params }: { params: { id: string 
             <div className="w-full h-full flex items-center justify-center text-muted">No image available</div>
           )}
           {property.image_count > 0 && (
-            <span className="absolute bottom-4 right-4 bg-black/60 text-white text-sm px-3 py-1.5 rounded">{property.image_count} photos</span>
+            <span className="absolute bottom-4 right-4 bg-black/70 text-white text-sm px-3 py-1.5 rounded-pill">{property.image_count} photos</span>
           )}
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mt-6">
           <div>
-            <h1 className="text-3xl font-heading tracking-display text-heading mb-2">{property.title}</h1>
-            <p className="text-lg text-muted">{property.locationName}</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-heading tracking-display">{property.title}</h1>
+            <p className="text-[15px] text-muted mt-1">{property.locationName}</p>
           </div>
-          <div className="text-right">
-            <div className="text-3xl font-semibold text-primary-600">{price}</div>
+          <div className="text-right shrink-0">
+            <div className="text-2xl font-bold text-heading">{price}</div>
             <div className="text-sm text-muted mt-1">{property.currencyCode} · {property.eurPrice.toLocaleString()} EUR</div>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-4 mb-8">
-          <div className="bg-surface border border-border rounded-lg px-6 py-4 text-center min-w-[100px]">
-            <div className="text-2xl font-semibold text-heading">{property.bedrooms ?? '—'}</div>
-            <div className="text-xs text-muted uppercase tracking-wide mt-1">Bedrooms</div>
-          </div>
-          <div className="bg-surface border border-border rounded-lg px-6 py-4 text-center min-w-[100px]">
-            <div className="text-2xl font-semibold text-heading">{property.bathrooms ?? '—'}</div>
-            <div className="text-xs text-muted uppercase tracking-wide mt-1">Bathrooms</div>
-          </div>
-          {property.buildSize && (
-            <div className="bg-surface border border-border rounded-lg px-6 py-4 text-center min-w-[100px]">
-              <div className="text-2xl font-semibold text-heading">{property.buildSize}</div>
-              <div className="text-xs text-muted uppercase tracking-wide mt-1">Build m²</div>
+        {/* Specs — Airbnb-style pill chips */}
+        <div className="flex flex-wrap gap-3 mt-6">
+          {specs.map((s) => (
+            <div key={s.label} className="bg-surface border border-borderSoft rounded-pill px-5 py-2.5 text-center">
+              <div className="text-lg font-semibold text-heading">{s.value}</div>
+              <div className="text-[11px] text-muted uppercase tracking-wide mt-0.5">{s.label}</div>
             </div>
-          )}
-          {property.plotSize && (
-            <div className="bg-surface border border-border rounded-lg px-6 py-4 text-center min-w-[100px]">
-              <div className="text-2xl font-semibold text-heading">{property.plotSize}</div>
-              <div className="text-xs text-muted uppercase tracking-wide mt-1">Plot m²</div>
-            </div>
-          )}
-          <div className="bg-surface border border-border rounded-lg px-6 py-4 text-center min-w-[100px]">
-            <div className="text-2xl font-semibold text-heading capitalize">{type}</div>
-            <div className="text-xs text-muted uppercase tracking-wide mt-1">Type</div>
-          </div>
+          ))}
         </div>
 
-        <div className="bg-surface border border-border rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-heading text-heading mb-4">Description</h2>
-          <p className="text-body leading-relaxed whitespace-pre-line">{property.description}</p>
+        {/* Description */}
+        <div className="bg-surface border border-borderSoft rounded-lg p-6 mt-6">
+          <h2 className="text-xl font-bold text-heading mb-3">About this property</h2>
+          <p className="text-[15px] text-heading leading-relaxed whitespace-pre-line">{property.description}</p>
         </div>
 
-        <PropertyActions url={property.url} />
+        {/* Actions */}
+        <div className="mt-6">
+          <PropertyActions url={property.url} />
+        </div>
       </div>
     </main>
   );

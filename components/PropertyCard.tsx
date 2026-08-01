@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useState } from 'react';
 import { Property } from '@/lib/rag';
 
 const currencySymbols: Record<string, string> = {
@@ -10,82 +11,88 @@ const currencySymbols: Record<string, string> = {
 export function PropertyCard({ property }: { property: Property }) {
   const symbol = currencySymbols[property.currencyCode] || '€';
   const price = `${symbol}${property.price.toLocaleString('en-US')}`;
-  const type = property.title.split(' in ')[0]?.split(' in ')[0] || 'Property';
+  const [favorited, setFavorited] = useState(false);
 
   return (
-    <Link
-      href={`/properties/${property.id}`}
-      className="group block bg-surface border border-border rounded-lg overflow-hidden transition-all duration-200 hover:shadow-cardHover hover:-translate-y-0.5"
-    >
-      {/* Image */}
-      <div className="relative aspect-[16/10] bg-surface-alt overflow-hidden">
-        {property.thumbnail_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={property.thumbnail_url}
-            alt={property.title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted text-sm">
-            No image
-          </div>
-        )}
-        {property.image_count > 0 && (
-          <span className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-            {property.image_count} photos
-          </span>
-        )}
-      </div>
-
-      {/* Body */}
-      <div className="p-5 flex flex-col flex-1">
-        <h3 className="text-lg font-heading tracking-display text-heading mb-1 line-clamp-2 leading-snug">
-          {property.title}
-        </h3>
-        <p className="text-sm text-muted mb-3">{property.locationName}</p>
-
-        {/* Specs */}
-        <div className="flex items-center gap-4 text-sm text-muted mb-3">
-          {property.bedrooms != null && (
-            <span className="flex items-center gap-1">
-              <strong className="text-heading font-body">{property.bedrooms}</strong> bed
+    <div className="group">
+      <Link href={`/properties/${property.id}`} className="block">
+        {/* Image — Airbnb rounded corners + soft shadow */}
+        <div className="relative aspect-square rounded-lg overflow-hidden bg-surface-alt shadow-sm group-hover:shadow-card transition-shadow duration-200">
+          {property.thumbnail_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={property.thumbnail_url}
+              alt={property.title}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted text-sm">
+              No image
+            </div>
+          )}
+          {property.image_count > 0 && (
+            <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-pill">
+              {property.image_count} photos
             </span>
           )}
-          {property.bathrooms != null && (
-            <span className="flex items-center gap-1">
-              <strong className="text-heading font-body">{property.bathrooms}</strong> bath
-            </span>
-          )}
-          {property.buildSize != null && (
-            <span className="flex items-center gap-1">
-              <strong className="text-heading font-body">{property.buildSize}</strong> m²
-            </span>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between mt-auto pt-2">
-          <span className="text-xl font-body text-primary-600 font-semibold">{price}</span>
+          {/* Heart favorite */}
           <button
-            className="text-muted hover:text-primary-600 transition-colors p-2 rounded hover:bg-primary-50"
-            aria-label="Share property"
+            type="button"
+            aria-label={favorited ? 'Remove from favorites' : 'Save to favorites'}
+            aria-pressed={favorited}
             onClick={(e) => {
               e.preventDefault();
-              navigator.clipboard.writeText(
-                `${window.location.origin}/properties/${property.id}`
-              );
+              setFavorited((v) => !v);
             }}
+            className="absolute top-3 right-3 p-1.5 rounded-full transition-transform hover:scale-110 active:scale-95"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-              <polyline points="16 6 12 2 8 6" />
-              <line x1="12" x2="12" y1="2" y2="15" />
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 32 32"
+              className={favorited ? 'fill-rausch text-rausch' : 'fill-black/40 text-white'}
+              style={{ strokeWidth: 2 }}
+            >
+              <path d="M16 28c7-4.35 12-10 12-15a6 6 0 0 0-11-3.5A6 6 0 0 0 4 13c0 5 5 10.65 12 15z" />
             </svg>
           </button>
         </div>
+      </Link>
+
+      {/* Body */}
+      <div className="pt-3">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-semibold text-heading text-[15px] leading-snug line-clamp-1">
+            {property.locationName}
+          </h3>
+          <span className="text-sm text-muted shrink-0 flex items-center gap-1">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" className="text-heading">
+              <path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z" />
+            </svg>
+            {(property.eurPrice / 1_000_000 >= 1 ? (property.eurPrice / 1_000_000).toFixed(1) + 'M' : Math.round(property.eurPrice / 1000) + 'k')}
+          </span>
+        </div>
+
+        <p className="text-muted text-[14px] truncate">{property.title.split(' in ')[0]}</p>
+
+        {/* Specs */}
+        <p className="text-muted text-[14px] mt-0.5">
+          {[
+            property.bedrooms != null ? `${property.bedrooms} beds` : null,
+            property.bathrooms != null ? `${property.bathrooms} baths` : null,
+            property.buildSize != null ? `${property.buildSize} m²` : null,
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        </p>
+
+        {/* Price pill */}
+        <p className="mt-1.5 text-heading">
+          <span className="font-semibold">{price}</span>
+          <span className="text-muted font-normal"> night</span>
+        </p>
       </div>
-    </Link>
+    </div>
   );
 }

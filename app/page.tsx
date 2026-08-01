@@ -49,32 +49,34 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-surface-alt">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-surface border-b border-border">
+      <header className="sticky top-0 z-50 bg-surface border-b border-borderSoft">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <a href="/" className="text-2xl font-semibold text-primary-600 tracking-tight">
-            Property Search
+          <a href="/" className="text-2xl font-extrabold text-rausch tracking-tight">
+            property<span className="text-heading">search</span>
           </a>
           <nav className="flex gap-6">
-            <a href="#" className="text-sm font-body text-heading hover:text-primary-600 transition-colors">
+            <a href="#" className="text-sm font-medium text-heading hover:text-rausch transition-colors">
               Browse
             </a>
-            <a href="#" className="text-sm font-body text-heading hover:text-primary-600 transition-colors">
+            <a href="#" className="text-sm font-medium text-heading hover:text-rausch transition-colors">
               About
             </a>
           </nav>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="bg-surface border-b border-border px-6 py-12 text-center">
-        <h1 className="text-4xl font-heading tracking-display text-heading mb-3">
-          Find your dream property
+      {/* Hero + Airbnb pill search */}
+      <section className="bg-surface px-6 pt-10 pb-6 text-center">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-heading mb-2 tracking-display">
+          Find your next stay
         </h1>
-        <p className="text-lg text-muted mb-8 max-w-lg mx-auto">
-          Search thousands of properties with natural language. Browse listings, compare details, and find the perfect home.
+        <p className="text-[15px] text-muted mb-6">
+          Search thousands of homes with natural language.
         </p>
-        <div className="max-w-xl mx-auto relative">
-          <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+
+        {/* Search pill */}
+        <div className="max-w-2xl mx-auto flex items-center gap-2 bg-surface border border-border rounded-pill shadow-pill hover:shadow-pillHover transition-shadow pl-6 pr-2 py-2">
+          <svg className="text-heading shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
           </svg>
@@ -82,20 +84,44 @@ export default function Home() {
             type="text"
             value={query}
             onChange={(e) => { setQuery(e.target.value); setPage(1); }}
-            placeholder="Search by location, price, or features..."
-            className="w-full px-4 py-3 pl-11 pr-4 border border-borderInput rounded-md bg-surface text-heading text-sm shadow-sm focus:outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-200"
+            placeholder="Try “cheap house in France”…"
+            className="flex-1 px-2 py-2 bg-transparent text-heading text-sm focus:outline-none placeholder:text-foggy"
           />
+          <button
+            type="button"
+            aria-label="Search"
+            className="bg-rausch hover:bg-rausch-600 text-white rounded-pill p-2.5 transition-colors"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Example chips */}
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
+          {['cheap house in France', 'luxury villa spain', 'apartment with pool'].map((ex) => (
+            <button
+              key={ex}
+              type="button"
+              onClick={() => { setQuery(ex); setPage(1); }}
+              className="text-xs font-medium text-heading border border-border rounded-pill px-3 py-1.5 hover:border-heading transition-colors"
+            >
+              {ex}
+            </button>
+          ))}
         </div>
       </section>
 
       {/* Filters */}
-      <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center gap-4">
+      <div className="max-w-7xl mx-auto px-6 py-5 flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
-          <label className="text-xs font-medium text-muted uppercase tracking-wide">Sort</label>
+          <label className="text-xs font-semibold text-heading uppercase tracking-wide">Sort</label>
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value)}
-            className="text-sm border border-border rounded px-3 py-2 bg-surface text-heading focus:outline-none focus:border-primary-600"
+            className="text-sm font-medium border border-border rounded-pill px-4 py-2 bg-surface text-heading focus:outline-none focus:border-heading cursor-pointer"
           >
             <option value="recent">Recently Added</option>
             <option value="price-asc">Price: Low to High</option>
@@ -104,11 +130,11 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-2">
-          <label className="text-xs font-medium text-muted uppercase tracking-wide">Beds</label>
+          <label className="text-xs font-semibold text-heading uppercase tracking-wide">Beds</label>
           <select
             value={minBeds}
             onChange={(e) => { setMinBeds(e.target.value); setPage(1); }}
-            className="text-sm border border-border rounded px-3 py-2 bg-surface text-heading focus:outline-none focus:border-primary-600"
+            className="text-sm font-medium border border-border rounded-pill px-4 py-2 bg-surface text-heading focus:outline-none focus:border-heading cursor-pointer"
           >
             <option value="">Any</option>
             <option value="1">1+</option>
@@ -120,13 +146,13 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-2">
-          <label className="text-xs font-medium text-muted uppercase tracking-wide">Max €</label>
+          <label className="text-xs font-semibold text-heading uppercase tracking-wide">Max €</label>
           <input
             type="text"
             value={maxPrice}
             onChange={(e) => { setMaxPrice(e.target.value); setPage(1); }}
             placeholder="500,000"
-            className="w-28 text-sm border border-border rounded px-3 py-2 bg-surface text-heading focus:outline-none focus:border-primary-600"
+            className="w-32 text-sm font-medium border border-border rounded-pill px-4 py-2 bg-surface text-heading focus:outline-none focus:border-heading"
           />
         </div>
 
@@ -138,11 +164,11 @@ export default function Home() {
       {/* Grid */}
       <div className="max-w-7xl mx-auto px-6 pb-12">
         {loading ? (
-          <div className="text-center py-20 text-muted">Loading...</div>
+          <div className="text-center py-20 text-muted">Loading…</div>
         ) : properties.length === 0 ? (
           <div className="text-center py-20 text-muted">No properties found. Try adjusting your search.</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8">
             {properties.map((p) => (
               <PropertyCard key={p.id} property={p} />
             ))}
@@ -151,11 +177,11 @@ export default function Home() {
 
         {/* Pagination */}
         {total > 20 && (
-          <div className="flex justify-center items-center gap-2 mt-10">
+          <div className="flex justify-center items-center gap-3 mt-12">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-4 py-2 text-sm border border-border rounded hover:border-primary-600 hover:text-primary-600 disabled:opacity-40 disabled:cursor-default"
+              className="px-5 py-2.5 text-sm font-semibold border border-border rounded-pill hover:border-heading disabled:opacity-40 disabled:cursor-default transition-colors"
             >
               ← Prev
             </button>
@@ -163,7 +189,7 @@ export default function Home() {
             <button
               onClick={() => setPage((p) => p + 1)}
               disabled={page * 20 >= total}
-              className="px-4 py-2 text-sm border border-border rounded hover:border-primary-600 hover:text-primary-600 disabled:opacity-40 disabled:cursor-default"
+              className="px-5 py-2.5 text-sm font-semibold border border-border rounded-pill hover:border-heading disabled:opacity-40 disabled:cursor-default transition-colors"
             >
               Next →
             </button>
