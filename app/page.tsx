@@ -46,14 +46,12 @@ export default function Home() {
     if (query.trim()) params.set('q', query);
     params.set('page', page.toString());
     params.set('limit', '20');
+    params.set('sort', sort);
 
     try {
       const res = await fetch(`/api/properties?${params.toString()}`);
       const data = await res.json();
-      let results = (data.properties || []) as Property[];
-
-      if (sort === 'price-asc') results = [...results].sort((a, b) => a.price - b.price);
-      if (sort === 'price-desc') results = [...results].sort((a, b) => b.price - a.price);
+      const results = (data.properties || []) as Property[];
 
       setProperties(results);
       setTotal(data.total || 0);

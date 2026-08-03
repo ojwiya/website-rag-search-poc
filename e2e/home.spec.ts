@@ -21,8 +21,13 @@ async function resultCount(page: Page): Promise<number> {
 }
 
 // Every property card shows exactly one price node like "€1,120,977".
+// Scope to card anchors so we never pick up stray page-level text nodes.
 async function visibleCardPrices(page: Page): Promise<number[]> {
-  const texts = await page.getByText(/€[\d,]+/).allInnerTexts();
+  const texts = await page
+    .locator('a:has-text("View details")')
+    .locator('xpath=ancestor::div[contains(@class,"group")]')
+    .getByText(/€[\d,]+/)
+    .allInnerTexts();
   return texts.map((t) => parseInt(t.replace(/[^\d]/g, ''), 10)).filter((n) => n > 0);
 }
 
@@ -100,6 +105,48 @@ test.describe('Homes in the Sun — e2e', () => {
     for (const v of prices) {
       expect(v, `price ${v} exceeds €300,000 cap`).toBeLessThanOrEqual(300000);
     }
+  });
+
+  test('sort dropdown reorders results after a search (price + newest)', async ({ page }) => {
+    await page.goto('/');
+    await waitForResults(page);
+
+    const box = page.getByPlaceholder(/3-bed villa/);
+    await box.fill('apartment');
+    await box.press('Enter');
+    await expect(page.getByText('"apartment"')).toBeVisible();
+    await waitForResults(page);
+
+    const readPrices = async () =>
+      (await visibleCardPrices(page)).slice(0, 8);
+
+    // Price: low to high
+    await page.selectOption('select', 'price-asc');
+    await expect(async () => {
+      const asc = await readPrices();
+      expect(asc.length).toBeGreaterThan(1);
+      expect(asc.every((v, i) => i === 0 || asc[i - 1] <= v), `not ascending: ${asc}`).toBe(true);
+    }).toPass();
+
+    // Price: high to low
+    await page.selectOption('select', 'price-desc');
+    await expect(async () => {
+      const desc = await readPrices();
+      expect(desc.every((v, i) => i === 0 || desc[i - 1] >= v), `not descending: ${desc}`).toBe(true);
+    }).toPass();
+
+    // "Newest" must produce a different order than "best" (it was previously a no-op).
+    await page.selectOption('select', 'best');
+    await page.waitForTimeout(600);
+    const best = await readPrices();
+    await page.selectOption('select', 'newest');
+    await expect(async () => {
+      const newest = await readPrices();
+      expect(
+        JSON.stringify(best) !== JSON.stringify(newest),
+        `newest identical to best: ${newest}`
+      ).toBe(true);
+    }).toPass();
   });
 
   test('FAQ accordion expands on click', async ({ page }) => {
