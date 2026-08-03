@@ -50,6 +50,7 @@ export interface FilterOptions {
   minPrice?: number;
   maxPrice?: number;
   minBeds?: number;
+  beds?: number;
   propertyType?: string;
   country?: string;
 }
@@ -62,6 +63,8 @@ export function filterProperties(
     if (opts.minPrice !== undefined && p.price < opts.minPrice) return false;
     if (opts.maxPrice !== undefined && p.price > opts.maxPrice) return false;
     if (opts.minBeds !== undefined && (p.bedrooms || 0) < opts.minBeds) return false;
+    // Exact bedroom count (natural-language "3 bed" => exactly 3, not 3+).
+    if (opts.beds !== undefined && (p.bedrooms || 0) !== opts.beds) return false;
     if (opts.country && p.country_slug !== opts.country) return false;
     if (opts.propertyType) {
       const type = inferPropertyType(p.title);
@@ -156,12 +159,16 @@ export function searchProperties(
     }
   }
 
-  // Bedroom intent: "3 bedroom", "4 bed", "2br" -> minimum bedrooms filter.
-  const bedMatch = q.match(/(\d+)\s*(?:bed|bedroom|bedrooms|br)\b/);
+  // Bedroom intent: "3 bedroom", "4 bed", "2br", "3-bed" -> EXACT bedroom count.
+  // Allow an optional hyphen or en/em dash between the number and "bed".
+  const bedMatch = q.match(/(\d+)\s*(?:-|–|—)?\s*(?:bed|bedroom|bedrooms|br)\b/);
   if (bedMatch) {
-    filters.minBeds = parseInt(bedMatch[1], 10);
-    // Mark the numeric token + the bed-word so they aren't scored as text.
+    filters.beds = parseInt(bedMatch[1], 10);
+    // Mark the numeric token, the full matched token (e.g. "3-bed" — a single
+    // word with no space, so it would otherwise become a required scoring
+    // term that never matches), and the bed-word so they aren't scored as text.
     handled.add(bedMatch[1]);
+    handled.add(bedMatch[0]);
     ['bed', 'beds', 'bedroom', 'bedrooms', 'br'].forEach((w) => handled.add(w));
   }
 
@@ -169,7 +176,7 @@ export function searchProperties(
   //   €300,000  300,000  300000  300k  1.2m  1.5 million
   // These set a hard maxPrice (with "under"/"below"/"less") or minPrice
   // (with "over"/"above"/"more"), independent of the qualitative PRICE_INTENT words.
-  const numberWords = (q.match(/€?\s*\d[\d,.]*\s*(?:k|m|million|millions)?(?!\s*bed)/gi) || [])
+  const numberWords = (q.match(/€?\s*\d[\d,.]*\s*(?:k|m|million|millions)?(?!\s*(?:-|–|—)?\s*(?:bed|br|bedroom|bedrooms))/gi) || [])
     .map((raw) => {
       const mult = /m|million/i.test(raw) ? 1_000_000 : /k/i.test(raw) ? 1_000 : 1;
       const num = parseFloat(raw.replace(/[^\d.]/g, ''));
@@ -197,6 +204,7 @@ export function searchProperties(
     filters.minPrice !== undefined ||
     filters.maxPrice !== undefined ||
     filters.minBeds !== undefined ||
+    filters.beds !== undefined ||
     filters.country
       ? filterProperties(properties, filters)
       : properties;

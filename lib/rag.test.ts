@@ -182,19 +182,45 @@ describe('searchProperties — feature intent in natural language', () => {
 // BEDROOM intent
 // ---------------------------------------------------------------------------
 describe('searchProperties — bedroom intent in natural language', () => {
-  it('"3 bedroom house spain" requires >= 3 bedrooms AND country spain', () => {
+  it('"3 bedroom house spain" requires EXACTLY 3 bedrooms AND country spain', () => {
     const r = searchProperties(fixtures, '3 bedroom house spain', 20);
     for (const p of r) {
       expect(p.country_slug).toBe('spain');
-      expect((p.bedrooms || 0)).toBeGreaterThanOrEqual(3);
+      expect(p.bedrooms).toBe(3); // exact, not 3+
     }
     expect(r.map((p) => p.id)).toContain(10); // 3-bed Spain house
     expect(r.map((p) => p.id)).not.toContain(11); // 2-bed Spain house excluded
   });
 
-  it('"2br apartment" requires >= 2 bedrooms', () => {
+  it('"2br apartment" requires EXACTLY 2 bedrooms (not 2+)', () => {
     const r = searchProperties(fixtures, '2br apartment', 20);
-    for (const p of r) expect((p.bedrooms || 0)).toBeGreaterThanOrEqual(2);
+    for (const p of r) expect(p.bedrooms).toBe(2);
+  });
+
+  it('"2br apartment" requires EXACTLY 2 bedrooms (not confused with a €2 price)', () => {
+    const r = searchProperties(fixtures, '2br apartment', 20);
+    expect(r.length).toBeGreaterThan(0);
+    for (const p of r) expect(p.bedrooms).toBe(2);
+  });
+
+  it('"2 br apartment" (space + br) is not parsed as a €2 price cap', () => {
+    const r = searchProperties(fixtures, '2 br apartment', 20);
+    expect(r.length).toBeGreaterThan(0);
+    for (const p of r) expect(p.bedrooms).toBe(2);
+  });
+
+  it('"3-bed villa with pool in Italy" parses the hyphen like the space form', () => {
+    const hyphen = searchProperties(fixtures, '3-bed villa with pool in Italy', 1000);
+    const space = searchProperties(fixtures, '3 bed villa with pool in Italy', 1000);
+    // Both forms must parse the bedroom intent identically...
+    expect(hyphen.length).toBe(space.length);
+    // ...and every returned property must have EXACTLY 3 beds + villa + pool.
+    for (const p of hyphen) {
+      expect(p.bedrooms).toBe(3);
+      const hay = (p.title + ' ' + p.locationName + ' ' + (p.description || '')).toLowerCase();
+      expect(hay).toContain('villa');
+      expect(hay).toContain('pool');
+    }
   });
 });
 
