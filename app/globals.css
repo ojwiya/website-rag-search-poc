@@ -2,24 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Code+Pro:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-weight: 400;
-  color: #222222;
-  background: #F7F7F7;
+  color: #1E3A5F;
+  background: #EAF2FB;
   -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
-  color: #222222;
+  font-weight: 700;
+  color: #1E3A5F;
   letter-spacing: -0.02em;
 }
 
-/* Airbnb-style focus ring */
+/* Focus ring */
 :focus-visible {
-  outline: 2px solid #222222;
+  outline: 2px solid #2B6CF6;
   outline-offset: 2px;
 }

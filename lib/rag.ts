@@ -21,6 +21,7 @@ export interface Property {
   url: string;
   image_count: number;
   thumbnail_url: string | null;
+  tag?: string;
 }
 
 interface PropertyData {

@@ -7,46 +7,57 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Airbnb "Rausch" coral — the single brand accent
-        rausch: {
-          DEFAULT: '#FF385C',
-          50: '#FFE9EE',
-          100: '#FFD4DE',
-          200: '#FFB3C6',
-          500: '#FF385C',
-          600: '#E31C5F',
-          700: '#D70466',
-          dark: '#BD1E59',
-        },
-        // Airbnb secondary teal (legacy/alt accent + hovers)
-        babu: '#008489',
-        // Map legacy tokens to Airbnb values so component classes keep working
+        // Primary interactive (links, buttons, search icon, active heart)
         primary: {
-          50: '#FFE9EE',
-          100: '#FFD4DE',
-          200: '#FFB3C6',
-          500: '#FF385C',
-          600: '#FF385C',
-          700: '#E31C5F',
+          DEFAULT: '#2B6CF6',
+          600: '#1E56D6',
+        },
+        // Legacy alias kept so old class names keep resolving
+        rausch: {
+          DEFAULT: '#2B6CF6',
+          600: '#1E56D6',
         },
         surface: {
-          DEFAULT: '#ffffff',
-          alt: '#F7F7F7', // page background
+          DEFAULT: '#FFFFFF',
+          alt: '#EAF2FB', // page background
         },
-        // Airbnb text/neutral scale
-        heading: '#222222', // primary text (was #061b31)
-        body: '#222222', // body text
-        muted: '#717171', // secondary text (was #6B7280)
-        border: '#DDDDDD', // was #E5E7EB
-        borderInput: '#B0B0B0',
-        borderSoft: '#EBEBEB',
+        // Navy — headings / prices / locations
+        heading: '#1E3A5F',
+        body: '#1E3A5F',
+        // Muted text (subtext, hero subhead)
+        muted: '#5B6B82',
+        // Faint muted (card meta, agent-verified, property-type tag)
+        faint: '#8A97A8',
+        // Card + hairline borders
+        border: '#E7EEF8',
+        borderSoft: '#E7EEF8',
+        borderInput: '#DCE6F5',
+        card: {
+          DEFAULT: '#F8FAFD',
+          border: '#E7EEF8',
+          hover: '#FFFFFF',
+          hoverBorder: '#DCE6F5',
+        },
+        // Orange — wordmark dot + Free guide kicker only
+        orange: '#F5A623',
+        // Listing tag text (white pill)
+        tag: '#B87A1B',
+        // Footer
+        footer: {
+          DEFAULT: '#152A45',
+          muted: '#8FA0B8',
+          border: '#24405F',
+          copyright: '#7E90A8',
+        },
+        // Sea teal — logo icon only
+        teal: '#17A398',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
         mono: ['Source Code Pro', 'monospace'],
       },
       fontWeight: {
-        heading: 600,
+        heading: 700,
         body: 400,
         button: 600,
       },
@@ -54,19 +65,17 @@ module.exports = {
         display: '-0.02em',
       },
       borderRadius: {
-        // Airbnb uses generous, soft rounding
         sm: '8px',
         md: '12px',
         lg: '16px',
         pill: '9999px',
       },
       boxShadow: {
-        // Soft, low-contrast shadows instead of hard borders
-        card: '0 6px 16px rgba(0,0,0,0.12)',
-        cardHover: '0 10px 24px rgba(0,0,0,0.16)',
-        pill: '0 1px 2px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05)',
-        pillHover: '0 2px 4px rgba(0,0,0,0.18)',
-        sm: '0 1px 2px rgba(0,0,0,0.08)',
+        card: '0 1px 3px rgba(30,58,95,0.06)',
+        cardHover: '0 6px 16px rgba(30,58,95,0.08)',
+        pill: '0 1px 2px rgba(30,58,95,0.05)',
+        stripe: '0 2px 6px rgba(30,58,95,0.03)',
+        sm: '0 1px 2px rgba(30,58,95,0.05)',
       },
     },
   },

@@ -2,33 +2,56 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { PropertyCard } from '@/components/PropertyCard';
+import { BrandLogo } from '@/components/BrandLogo';
 import { Property } from '@/lib/rag';
+
+const EXAMPLES = ['Villa with pool, Costa del Sol', 'Apartment under €300,000', 'New build, sea view'];
+
+const FAQS = [
+  {
+    q: 'What is the average price of an apartment in Spain?',
+    a: 'Average apartment prices vary widely by region — coastal hotspots like the Costa del Sol typically start around €250,000, while inland towns can be significantly lower.',
+  },
+  {
+    q: 'Can foreigners buy property in Spain?',
+    a: 'Yes. There are no restrictions on foreign buyers owning property in Spain, and the process is well established for overseas purchasers.',
+  },
+  {
+    q: 'What taxes and fees should I budget for?',
+    a: 'Budget roughly 10–12% on top of the purchase price for transfer tax, notary, legal fees, and registry costs. Annual running costs are separate.',
+  },
+  {
+    q: 'How many properties fall under €300,000?',
+    a: 'A large share of our listings sit under €300,000. Use the natural-language search — try “apartment under €300,000” — to see current matches.',
+  },
+];
+
+function Price({ value, currencyCode }: { value: number; currencyCode: string }) {
+  const symbol = { EUR: '€', GBP: '£', USD: '$' }[currencyCode] || '€';
+  return <>{symbol}{value.toLocaleString('en-US')}</>;
+}
 
 export default function Home() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
-  const [sort, setSort] = useState('recent');
-  const [minBeds, setMinBeds] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
+  const [sort, setSort] = useState('best');
   const [page, setPage] = useState(1);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const fetchProperties = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams();
     if (query.trim()) params.set('q', query);
-    if (minBeds) params.set('minBeds', minBeds);
-    if (maxPrice) params.set('maxPrice', maxPrice.replace(/[^0-9]/g, ''));
     params.set('page', page.toString());
     params.set('limit', '20');
 
     try {
       const res = await fetch(`/api/properties?${params.toString()}`);
       const data = await res.json();
-      let results = data.properties || [];
+      let results = (data.properties || []) as Property[];
 
-      // Client-side sort
       if (sort === 'price-asc') results = [...results].sort((a, b) => a.price - b.price);
       if (sort === 'price-desc') results = [...results].sort((a, b) => b.price - a.price);
 
@@ -39,44 +62,46 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [query, sort, minBeds, maxPrice, page]);
+  }, [query, sort, page]);
 
   useEffect(() => {
     const debounce = setTimeout(fetchProperties, 300);
     return () => clearTimeout(debounce);
   }, [fetchProperties]);
 
+  const start = total === 0 ? 0 : (page - 1) * 20 + 1;
+  const end = Math.min(page * 20, total);
+
   return (
     <main className="min-h-screen bg-surface-alt">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-surface border-b border-borderSoft">
+      <header className="sticky top-0 z-50 bg-surface border-b" style={{ borderColor: '#E7EEF8' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <a href="/" className="text-2xl font-extrabold text-rausch tracking-tight">
-            property<span className="text-heading">search</span>
+          <a href="/" aria-label="Homes in the Sun — home">
+            <BrandLogo variant="header" />
           </a>
           <nav className="flex gap-6">
-            <a href="#" className="text-sm font-medium text-heading hover:text-rausch transition-colors">
-              Browse
-            </a>
-            <a href="#" className="text-sm font-medium text-heading hover:text-rausch transition-colors">
-              About
-            </a>
+            <a href="#" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>Browse</a>
+            <a href="#" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>About</a>
           </nav>
         </div>
       </header>
 
-      {/* Hero + Airbnb pill search */}
-      <section className="bg-surface px-6 pt-10 pb-6 text-center">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-heading mb-2 tracking-display">
-          Find your next stay
+      {/* Hero */}
+      <section
+        className="px-6 pt-12 pb-8 text-center"
+        style={{ background: 'radial-gradient(circle at 50% 0%, #FBF6EA 0%, rgba(251,246,234,0) 55%)' }}
+      >
+        <h1 className="text-[40px] sm:text-[48px] font-extrabold text-heading leading-tight tracking-display">
+          Find your next home in Spain
         </h1>
-        <p className="text-[15px] text-muted mb-6">
-          Search thousands of homes with natural language.
+        <p className="text-[15px] mt-3" style={{ color: '#5B6B82' }}>
+          Search thousands of verified listings with natural language.
         </p>
 
         {/* Search pill */}
-        <div className="max-w-2xl mx-auto flex items-center gap-2 bg-surface border border-border rounded-pill shadow-pill hover:shadow-pillHover transition-shadow pl-6 pr-2 py-2">
-          <svg className="text-heading shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <div className="max-w-2xl mx-auto mt-7 flex items-center gap-2 bg-white border rounded-pill shadow-pill pl-6 pr-2 py-2" style={{ borderColor: '#DCE6F5' }}>
+          <svg className="shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2B6CF6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
           </svg>
@@ -84,13 +109,16 @@ export default function Home() {
             type="text"
             value={query}
             onChange={(e) => { setQuery(e.target.value); setPage(1); }}
-            placeholder="Try “cheap house in France”…"
-            className="flex-1 px-2 py-2 bg-transparent text-heading text-sm focus:outline-none placeholder:text-foggy"
+            placeholder={'Try "3-bed villa with pool near Marbella"...'}
+            className="flex-1 px-2 py-2 bg-transparent text-heading text-sm focus:outline-none placeholder:text-faint"
           />
           <button
             type="button"
             aria-label="Search"
-            className="bg-rausch hover:bg-rausch-600 text-white rounded-pill p-2.5 transition-colors"
+            className="text-white rounded-pill p-2.5 transition-colors"
+            style={{ background: '#2B6CF6' }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#1E56D6')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#2B6CF6')}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8" />
@@ -101,12 +129,13 @@ export default function Home() {
 
         {/* Example chips */}
         <div className="mt-4 flex flex-wrap justify-center gap-2">
-          {['cheap house in France', 'luxury villa spain', 'apartment with pool'].map((ex) => (
+          {EXAMPLES.map((ex) => (
             <button
               key={ex}
               type="button"
               onClick={() => { setQuery(ex); setPage(1); }}
-              className="text-xs font-medium text-heading border border-border rounded-pill px-3 py-1.5 hover:border-heading transition-colors"
+              className="text-xs font-medium rounded-pill px-3 py-1.5 bg-white transition-colors"
+              style={{ color: '#1E3A5F', border: '1px solid #DCE6F5' }}
             >
               {ex}
             </button>
@@ -114,59 +143,46 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Filters */}
-      <div className="max-w-7xl mx-auto px-6 py-5 flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-heading uppercase tracking-wide">Sort</label>
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="text-sm font-medium border border-border rounded-pill px-4 py-2 bg-surface text-heading focus:outline-none focus:border-heading cursor-pointer"
-          >
-            <option value="recent">Recently Added</option>
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-          </select>
+      {/* Results bar — replaces the filter row */}
+      <div
+        className="sticky top-[73px] z-40 flex items-center justify-between flex-wrap gap-4 px-6 sm:px-12 py-4 bg-white"
+        style={{ borderTop: '1px solid #E7EEF8', borderBottom: '1px solid #E7EEF8', boxShadow: '0 2px 6px rgba(30,58,95,0.03)' }}
+      >
+        <div className="flex items-center gap-2.5 flex-wrap text-sm" style={{ color: '#5B6B82' }}>
+          <span className="flex items-center gap-1.5">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8A97A8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            {query.trim() ? (
+              <span className="font-semibold" style={{ color: '#1E3A5F' }}>{`"${query.trim()}"`}</span>
+            ) : (
+              <span className="font-semibold" style={{ color: '#1E3A5F' }}>All listings</span>
+            )}
+          </span>
+          <span>
+            <strong style={{ color: '#1E3A5F' }}>{start}–{end}</strong> of <strong style={{ color: '#1E3A5F' }}>{total.toLocaleString()}</strong> matches
+          </span>
         </div>
-
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-heading uppercase tracking-wide">Beds</label>
-          <select
-            value={minBeds}
-            onChange={(e) => { setMinBeds(e.target.value); setPage(1); }}
-            className="text-sm font-medium border border-border rounded-pill px-4 py-2 bg-surface text-heading focus:outline-none focus:border-heading cursor-pointer"
-          >
-            <option value="">Any</option>
-            <option value="1">1+</option>
-            <option value="2">2+</option>
-            <option value="3">3+</option>
-            <option value="4">4+</option>
-            <option value="5">5+</option>
-          </select>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-heading uppercase tracking-wide">Max €</label>
-          <input
-            type="text"
-            value={maxPrice}
-            onChange={(e) => { setMaxPrice(e.target.value); setPage(1); }}
-            placeholder="500,000"
-            className="w-32 text-sm font-medium border border-border rounded-pill px-4 py-2 bg-surface text-heading focus:outline-none focus:border-heading"
-          />
-        </div>
-
-        <div className="ml-auto text-sm text-muted">
-          <strong className="text-heading">{total.toLocaleString()}</strong> properties
-        </div>
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          className="text-sm font-semibold rounded-md px-3.5 py-2.5 bg-white cursor-pointer"
+          style={{ border: '1px solid #DCE6F5', color: '#1E3A5F' }}
+        >
+          <option value="best">Sort: Best match</option>
+          <option value="price-asc">Price: low to high</option>
+          <option value="price-desc">Price: high to low</option>
+          <option value="newest">Newest listings</option>
+        </select>
       </div>
 
       {/* Grid */}
-      <div className="max-w-7xl mx-auto px-6 pb-12">
+      <div className="max-w-7xl mx-auto px-6 pb-12 pt-8">
         {loading ? (
-          <div className="text-center py-20 text-muted">Loading…</div>
+          <div className="text-center py-20" style={{ color: '#5B6B82' }}>Loading…</div>
         ) : properties.length === 0 ? (
-          <div className="text-center py-20 text-muted">No properties found. Try adjusting your search.</div>
+          <div className="text-center py-20" style={{ color: '#5B6B82' }}>No properties found. Try adjusting your search.</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8">
             {properties.map((p) => (
@@ -175,27 +191,102 @@ export default function Home() {
           </div>
         )}
 
-        {/* Pagination */}
         {total > 20 && (
           <div className="flex justify-center items-center gap-3 mt-12">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-5 py-2.5 text-sm font-semibold border border-border rounded-pill hover:border-heading disabled:opacity-40 disabled:cursor-default transition-colors"
+              className="px-5 py-2.5 text-sm font-semibold rounded-pill transition-colors disabled:opacity-40 disabled:cursor-default"
+              style={{ border: '1px solid #DCE6F5', color: '#1E3A5F' }}
             >
               ← Prev
             </button>
-            <span className="text-sm text-muted px-2">Page {page}</span>
+            <span className="text-sm px-2" style={{ color: '#5B6B82' }}>Page {page}</span>
             <button
               onClick={() => setPage((p) => p + 1)}
               disabled={page * 20 >= total}
-              className="px-5 py-2.5 text-sm font-semibold border border-border rounded-pill hover:border-heading disabled:opacity-40 disabled:cursor-default transition-colors"
+              className="px-5 py-2.5 text-sm font-semibold rounded-pill transition-colors disabled:opacity-40 disabled:cursor-default"
+              style={{ border: '1px solid #DCE6F5', color: '#1E3A5F' }}
             >
               Next →
             </button>
           </div>
         )}
       </div>
+
+      {/* Trust / guide CTA band */}
+      <section className="bg-white">
+        <div className="max-w-6xl mx-auto px-6 py-14 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+          <div className="aspect-[16/10] rounded-lg bg-card border overflow-hidden" style={{ borderColor: '#E7EEF8' }}>
+            {/* image slot — no stock illustration per spec; subtle placeholder */}
+            <div className="w-full h-full flex items-center justify-center text-faint text-sm">Guide preview</div>
+          </div>
+          <div>
+            <span className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: '#F5A623' }}>Free guide</span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-heading mt-2 tracking-display">
+              Plan your Spain viewing trip
+            </h2>
+            <ul className="mt-5 space-y-3">
+              {[
+                'A checklist of regions and what each is known for',
+                'Questions to ask agents before you fly out',
+                'A budget template covering taxes and fees',
+              ].map((b) => (
+                <li key={b} className="flex items-start gap-2.5 text-[15px]" style={{ color: '#5B6B82' }}>
+                  <svg className="mt-0.5 shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2B6CF6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                  {b}
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              className="mt-6 px-6 py-3 text-white text-sm font-semibold rounded-pill transition-colors"
+              style={{ background: '#2B6CF6' }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#1E56D6')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = '#2B6CF6')}
+            >
+              Download the guide
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="bg-surface-alt">
+        <div className="max-w-[820px] mx-auto px-6 py-14">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-heading text-center tracking-display">
+            Frequently asked questions
+          </h2>
+          <div className="mt-8 divide-y" style={{ borderColor: '#E7EEF8' }}>
+            {FAQS.map((item, i) => {
+              const open = openFaq === i;
+              return (
+                <div key={item.q} style={{ borderColor: '#E7EEF8' }}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(open ? null : i)}
+                    className="w-full flex items-center justify-between gap-4 py-4 text-left"
+                  >
+                    <span className="font-semibold text-heading text-[15px]">{item.q}</span>
+                    <svg
+                      className="shrink-0 transition-transform duration-200"
+                      width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6B82" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                      style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </button>
+                  {open && (
+                    <p className="pb-4 text-[15px] leading-relaxed" style={{ color: '#5B6B82' }}>{item.a}</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
