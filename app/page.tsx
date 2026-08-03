@@ -5,7 +5,7 @@ import { PropertyCard } from '@/components/PropertyCard';
 import { BrandLogo } from '@/components/BrandLogo';
 import { Property } from '@/lib/rag';
 
-const EXAMPLES = ['Villa with pool, Costa del Sol', 'Apartment under €300,000', 'New build, sea view'];
+const EXAMPLES = ['Villa with pool, Costa del Sol', 'Properties €300,000 and below', 'New build, sea view'];
 
 const FAQS = [
   {
