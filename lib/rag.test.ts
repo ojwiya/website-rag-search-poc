@@ -147,16 +147,34 @@ describe('searchProperties — feature intent in natural language', () => {
     if (nonPoolIdx !== -1) expect(topPool).toBeLessThan(nonPoolIdx);
   });
 
-  it('"house with garden" surfaces garden descriptions', () => {
+  it('AND-logic: multi-term query intersects, not unions', () => {
+    const villa = searchProperties(fixtures, 'villa', 1000);
+    const pool = searchProperties(fixtures, 'pool', 1000);
+    const combined = searchProperties(fixtures, 'villa with pool', 1000);
+    // The combined result must be a subset of each individual term's matches
+    // (intersection), so it must be <= the smaller individual count — never
+    // larger (which would indicate OR/unioned matching).
+    expect(combined.length).toBeGreaterThan(0);
+    expect(combined.length).toBeLessThanOrEqual(villa.length);
+    expect(combined.length).toBeLessThanOrEqual(pool.length);
+    // And every returned property must actually contain ALL terms.
+    for (const p of combined) {
+      const hay = (p.title + ' ' + p.locationName + ' ' + (p.description || '')).toLowerCase();
+      expect(hay).toContain('villa');
+      expect(hay).toContain('pool');
+    }
+  });
+
+  it('"house with garden" surfaces garden descriptions (house is generic -> includes villas)', () => {
     const r = searchProperties(fixtures, 'house with garden', 20);
     expect(r.map((p) => p.id)).toContain(1); // "house with garden" in France
     expect(r.map((p) => p.id)).toContain(5); // "garden" in Costa Blanca villa
   });
 
-  it('"apartment with sea view" surfaces sea-view descriptions', () => {
+  it('"apartment with sea view" surfaces sea-view apartments (specific type excludes villas)', () => {
     const r = searchProperties(fixtures, 'apartment with sea view', 20);
     expect(r.map((p) => p.id)).toContain(8); // "sea view" luxury apartment
-    expect(r.map((p) => p.id)).toContain(4); // villa "sea view"
+    expect(r.map((p) => p.id)).not.toContain(4); // sea-view VILLA is excluded by "apartment"
   });
 });
 

@@ -41,7 +41,7 @@ test.describe('Homes in the Sun — e2e', () => {
     });
 
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Find your next home in Spain' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Find your next home in the sun' })).toBeVisible();
     await waitForResults(page);
 
     const bad = errors.filter((e) =>

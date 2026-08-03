@@ -91,7 +91,7 @@ export default function Home() {
         style={{ background: 'radial-gradient(circle at 50% 0%, #FBF6EA 0%, rgba(251,246,234,0) 55%)' }}
       >
         <h1 className="text-[40px] sm:text-[48px] font-extrabold text-heading leading-tight tracking-display">
-          Find your next home in Spain
+          Find your next home in the sun
         </h1>
         <p className="text-[15px] mt-3" style={{ color: '#5B6B82' }}>
           Search thousands of verified listings with natural language.

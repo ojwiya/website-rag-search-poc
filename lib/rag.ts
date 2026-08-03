@@ -107,6 +107,21 @@ const COUNTRY_MAP: { words: string[]; slug: string }[] = [
   { words: ['usa', 'america', 'american', 'unitedstates', 'states'], slug: 'usa' },
 ];
 
+// Words that carry no search intent (prepositions, articles, conjunctions).
+// They must not be required as AND-terms or scored.
+const STOPWORDS = new Set([
+  'with', 'the', 'and', 'in', 'of', 'for', 'near', 'to', 'a', 'an', 'by', 'at',
+  'on', 'de', 'del', 'la', 'el', 'los', 'las', 'from', 'that', 'this', 'has',
+  'have', 'my', 'our', 'your',
+]);
+
+// Generic dwelling nouns that should match ANY property type (loose intent),
+// as opposed to specific types (villa, apartment, cottage, ...) which are
+// hard requirements when present in a query.
+const GENERIC_NOUNS = new Set([
+  'house', 'home', 'property', 'properties', 'building', 'place', 'flat',
+]);
+
 // Simple text-based semantic-ish search
 // Score = weighted match of query terms across title, location, description, type.
 // Qualitative price/country intent is applied as a hard pre-filter before scoring.
@@ -116,7 +131,9 @@ export function searchProperties(
   limit = 20
 ): Property[] {
   const q = query.toLowerCase().trim();
-  const terms = q.split(/\s+/).filter((t) => t.length > 2);
+  const terms = q
+    .split(/\s+/)
+    .filter((t) => t.length > 2 && !STOPWORDS.has(t));
 
   if (terms.length === 0) return properties.slice(0, limit);
 
@@ -193,21 +210,39 @@ export function searchProperties(
     const type = inferPropertyType(p.title);
 
     let score = 0;
+    // Track which scoring terms actually matched this property, so we can
+    // enforce AND-logic: a result must contain EVERY meaningful query term
+    // (not just any one of them).
+    const matchedTerms = new Set<string>();
     for (const term of scoringTerms) {
+      let termScore = 0;
       // Title match (high weight)
-      if (title.includes(term)) score += 10;
+      if (title.includes(term)) termScore += 10;
       // Location match (high weight)
-      if (location.includes(term)) score += 8;
+      if (location.includes(term)) termScore += 8;
       // Type match
-      if (type.includes(term)) score += 6;
+      if (type.includes(term)) termScore += 6;
       // Description match (low weight)
-      if (desc.includes(term)) score += 2;
+      if (desc.includes(term)) termScore += 2;
       // Price intent (explicit number, e.g. "200k")
       if (term.match(/^\d+k?$/)) {
         const num = parseInt(term.replace('k', '000'));
-        if (p.price <= num * 1.2 && p.price >= num * 0.8) score += 5;
+        if (p.price <= num * 1.2 && p.price >= num * 0.8) termScore += 5;
+      }
+      if (termScore > 0) {
+        score += termScore;
+        matchedTerms.add(term);
       }
     }
+
+    // Only count as a match if the property contains every meaningful
+    // (non-structured, non-stopword) query term. Structured filters
+    // (country/price/beds) are already applied as hard pre-filters above.
+    // Generic dwelling nouns ("house", "home"...) are treated as matching any
+    // type, so they don't gate the result.
+    const matchedAllTerms =
+      scoringTerms.length === 0 ||
+      scoringTerms.every((t) => matchedTerms.has(t) || GENERIC_NOUNS.has(t));
 
     // Price-intent ordering: when "cheap"/"luxury" is requested, let price
     // drive ranking so the cheapest (or most expensive) surfaces first
@@ -219,7 +254,7 @@ export function searchProperties(
       score += (p.price - filters.minPrice) / 1000; // pricier => higher
     }
 
-    return { property: p, score };
+    return { property: p, score: matchedAllTerms ? score : 0 };
   });
 
   const filtered = scored.filter((s) => s.score > 0);

@@ -3,7 +3,7 @@ import './globals.css';
 import { Footer } from '@/components/Footer';
 
 export const metadata: Metadata = {
-  title: 'Homes in the Sun — Find your next home in Spain',
+  title: 'Homes in the Sun — Find your next home in the sun',
   description: 'Search thousands of verified overseas property listings with natural language.',
 };
 
