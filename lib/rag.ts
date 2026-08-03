@@ -148,6 +148,34 @@ export function searchProperties(
     ['bed', 'beds', 'bedroom', 'bedrooms', 'br'].forEach((w) => handled.add(w));
   }
 
+  // Explicit price numbers from the query, in any of these forms:
+  //   €300,000  300,000  300000  300k  1.2m  1.5 million
+  // These set a hard maxPrice (with "under"/"below"/"less") or minPrice
+  // (with "over"/"above"/"more"), independent of the qualitative PRICE_INTENT words.
+  const numberWords = (q.match(/€?\s*\d[\d,.]*\s*(?:k|m|million|millions)?(?!\s*bed)/gi) || [])
+    .map((raw) => {
+      const mult = /m|million/i.test(raw) ? 1_000_000 : /k/i.test(raw) ? 1_000 : 1;
+      const num = parseFloat(raw.replace(/[^\d.]/g, ''));
+      return Number.isFinite(num) ? num * mult : null;
+    })
+    .filter((n): n is number => n !== null && n > 0);
+
+  // Detect comparison direction from surrounding words.
+  const underish = /\b(under|below|beneath|less|max|up to|within|cheaper than)\b/.test(q);
+  const overish = /\b(over|above|more than|exceeding|from|starting)\b/.test(q);
+
+  if (numberWords.length > 0) {
+    // For "under X" use the smallest number as the ceiling; "over X" the largest as floor.
+    if (underish) filters.maxPrice = Math.min(...numberWords);
+    else if (overish) filters.minPrice = Math.max(...numberWords);
+    else {
+      // No direction word: treat the number as a soft proximity anchor (e.g. "apartment 300000").
+      const n = numberWords[0];
+      filters.minPrice = n * 0.8;
+      filters.maxPrice = n * 1.2;
+    }
+  }
+
   const base =
     filters.minPrice !== undefined ||
     filters.maxPrice !== undefined ||
@@ -158,7 +186,6 @@ export function searchProperties(
 
   // 2. Text-score the remaining (unhandled) terms.
   const scoringTerms = terms.filter((t) => !handled.has(t));
-
   const scored = base.map((p) => {
     const title = p.title.toLowerCase();
     const location = p.locationName.toLowerCase();

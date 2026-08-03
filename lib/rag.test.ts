@@ -90,6 +90,22 @@ describe('searchProperties — price intent in natural language', () => {
     const near = r.filter((p) => p.eurPrice >= 160000 && p.eurPrice <= 240000);
     expect(near.length).toBeGreaterThan(0);
   });
+
+  it('"apartment under €300,000" caps price at €300k (comma + euro form)', () => {
+    const r = searchProperties(fixtures, 'apartment under €300,000', 20);
+    for (const p of r) expect(p.eurPrice).toBeLessThanOrEqual(300000);
+    expect(r.map((p) => p.id)).not.toContain(8); // €1.5M apartment excluded
+  });
+
+  it('"villa over 1.2m" floors price at €1.2M', () => {
+    const r = searchProperties(fixtures, 'villa over 1.2m', 20);
+    for (const p of r) expect(p.eurPrice).toBeGreaterThanOrEqual(1200000);
+  });
+
+  it('"house below 500000" caps price at €500k', () => {
+    const r = searchProperties(fixtures, 'house below 500000', 20);
+    for (const p of r) expect(p.eurPrice).toBeLessThanOrEqual(500000);
+  });
 });
 
 // ---------------------------------------------------------------------------
