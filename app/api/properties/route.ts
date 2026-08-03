@@ -23,9 +23,12 @@ export async function GET(request: Request) {
     country: country || undefined,
   });
 
-  // Then semantic/text search if query provided
+  // Then semantic/text search if query provided.
+  // Pass a large limit so searchProperties returns the FULL matched set
+  // (it slices internally to `limit`); we compute the true total from the
+  // full set and paginate ourselves below.
   if (q.trim()) {
-    results = searchProperties(results, q);
+    results = searchProperties(results, q, 1_000_000);
   }
 
   const total = results.length;
