@@ -66,15 +66,10 @@ export function PropertyCard({ property }: { property: Property }) {
           <h3 className="font-semibold text-heading text-[15px] leading-snug line-clamp-1">
             {property.locationName}
           </h3>
-          <span className="text-sm text-muted shrink-0 flex items-center gap-1">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" className="text-heading">
-              <path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z" />
-            </svg>
-            {(property.eurPrice / 1_000_000 >= 1 ? (property.eurPrice / 1_000_000).toFixed(1) + 'M' : Math.round(property.eurPrice / 1000) + 'k')}
+          <span className="text-sm text-muted shrink-0 font-medium capitalize">
+            {property.title.split(' in ')[0]}
           </span>
         </div>
-
-        <p className="text-muted text-[14px] truncate">{property.title.split(' in ')[0]}</p>
 
         {/* Specs */}
         <p className="text-muted text-[14px] mt-0.5">
