@@ -2,12 +2,15 @@
 
 export function PropertyActions({ url }: { url?: string }) {
   return (
-    <div className="flex gap-3">
+    <div className="flex flex-wrap gap-3">
       <button
-        className="px-6 py-3 bg-primary-600 text-white text-sm font-body rounded-md hover:bg-primary-700 transition-colors"
+        type="button"
+        className="px-6 py-3 text-white text-sm font-semibold rounded-pill transition-colors"
+        style={{ background: '#2B6CF6' }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = '#1E56D6')}
+        onMouseLeave={(e) => (e.currentTarget.style.background = '#2B6CF6')}
         onClick={() => {
           navigator.clipboard.writeText(window.location.href);
-          alert('Link copied to clipboard');
         }}
       >
         Share this property
@@ -17,7 +20,8 @@ export function PropertyActions({ url }: { url?: string }) {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="px-6 py-3 border border-border text-heading text-sm font-body rounded-md hover:border-primary-600 hover:text-primary-600 transition-colors"
+          className="px-6 py-3 border text-sm font-semibold rounded-pill transition-colors"
+          style={{ borderColor: '#DCE6F5', color: '#1E3A5F' }}
         >
           View original listing
         </a>

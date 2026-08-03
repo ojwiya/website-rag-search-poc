@@ -2,17 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600&family=Source+Code+Pro:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 body {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-weight: 400;
-  color: #374151;
-  background: #F8FAFC;
+  color: #1E3A5F;
+  background: #EAF2FB;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-weight: 300;
-  color: #061b31;
+  font-weight: 700;
+  color: #1E3A5F;
   letter-spacing: -0.02em;
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid #2B6CF6;
+  outline-offset: 2px;
 }

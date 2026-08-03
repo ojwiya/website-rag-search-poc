@@ -9,6 +9,7 @@ export async function GET(request: Request) {
   const minBeds = searchParams.get('minBeds');
   const propertyType = searchParams.get('type');
   const country = searchParams.get('country');
+  const sort = searchParams.get('sort') || 'best';
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '20');
 
@@ -23,9 +24,31 @@ export async function GET(request: Request) {
     country: country || undefined,
   });
 
-  // Then semantic/text search if query provided
+  // Then semantic/text search if query provided.
+  // Pass a large limit so searchProperties returns the FULL matched set
+  // (it slices internally to `limit`); we compute the true total from the
+  // full set and paginate ourselves below.
   if (q.trim()) {
-    results = searchProperties(results, q);
+    results = searchProperties(results, q, 1_000_000);
+  }
+
+  // Sort the FULL matched set before paginating so ordering is consistent
+  // across pages (not just within the current page).
+  switch (sort) {
+    case 'price-asc':
+      results = [...results].sort((a, b) => a.price - b.price);
+      break;
+    case 'price-desc':
+      results = [...results].sort((a, b) => b.price - a.price);
+      break;
+    case 'newest':
+      // No date field in the dataset; use id desc as a recency proxy.
+      results = [...results].sort((a, b) => b.id - a.id);
+      break;
+    case 'best':
+    default:
+      // Leave in relevance order returned by searchProperties.
+      break;
   }
 
   const total = results.length;
