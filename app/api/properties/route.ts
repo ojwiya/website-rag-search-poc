@@ -1,8 +1,22 @@
 import { NextResponse } from 'next/server';
 import { loadProperties, searchProperties, filterProperties } from '@/lib/rag';
+import { getPublicPropertyById, toPublicProperties } from '@/lib/public-listing';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+  const idParam = searchParams.get('id');
+  if (idParam) {
+    const id = parseInt(idParam, 10);
+    if (Number.isNaN(id)) {
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    }
+    const property = getPublicPropertyById(id);
+    if (!property) {
+      return NextResponse.json({ error: 'Listing not found' }, { status: 404 });
+    }
+    return NextResponse.json({ property });
+  }
+
   const q = searchParams.get('q') || '';
   const minPrice = searchParams.get('minPrice');
   const maxPrice = searchParams.get('maxPrice');
@@ -56,7 +70,7 @@ export async function GET(request: Request) {
   const paginated = results.slice(start, start + limit);
 
   return NextResponse.json({
-    properties: paginated,
+    properties: toPublicProperties(paginated),
     total,
     page,
     limit,

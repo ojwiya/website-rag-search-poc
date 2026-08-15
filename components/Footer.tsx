@@ -1,56 +1,58 @@
+import Link from 'next/link';
 import { BrandLogo } from '@/components/BrandLogo';
 
 export function Footer() {
   return (
     <footer style={{ background: '#152A45' }} className="text-footer-muted">
       <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-        {/* Brand block */}
         <div>
           <BrandLogo variant="footer" />
           <p className="mt-4 text-sm leading-relaxed max-w-xs" style={{ color: '#8FA0B8' }}>
-            Verified overseas property listings, searchable in plain English.
-          </p>
-          <p className="mt-4 text-sm font-semibold" style={{ color: '#8FA0B8' }}>
-            +34 900 123 456
+            Overseas and holiday-home discovery — search in plain English, then view the full listing on the source site.
           </p>
         </div>
 
-        {/* Resources */}
         <div>
           <h4 className="text-sm font-bold uppercase tracking-wide mb-4" style={{ color: '#8FA0B8' }}>
             Resources
           </h4>
           <ul className="space-y-2 text-sm">
-            <li><a href="#" className="hover:text-white transition-colors" style={{ color: '#8FA0B8' }}>Buying guide</a></li>
-            <li><a href="#" className="hover:text-white transition-colors" style={{ color: '#8FA0B8' }}>Area guides</a></li>
-            <li><a href="#" className="hover:text-white transition-colors" style={{ color: '#8FA0B8' }}>Mortgage calculator</a></li>
-            <li><a href="#" className="hover:text-white transition-colors" style={{ color: '#8FA0B8' }}>FAQ</a></li>
+            <li>
+              <Link href="/guides/spain" className="hover:text-white transition-colors" style={{ color: '#8FA0B8' }}>
+                Buying guide (Spain)
+              </Link>
+            </li>
+            <li>
+              <a href="#faq" className="hover:text-white transition-colors" style={{ color: '#8FA0B8' }}>
+                FAQ
+              </a>
+            </li>
           </ul>
         </div>
 
-        {/* Company */}
         <div>
           <h4 className="text-sm font-bold uppercase tracking-wide mb-4" style={{ color: '#8FA0B8' }}>
             Company
           </h4>
           <ul className="space-y-2 text-sm">
-            <li><a href="#" className="hover:text-white transition-colors" style={{ color: '#8FA0B8' }}>About us</a></li>
-            <li><a href="#" className="hover:text-white transition-colors" style={{ color: '#8FA0B8' }}>How it works</a></li>
-            <li><a href="#" className="hover:text-white transition-colors" style={{ color: '#8FA0B8' }}>Contact</a></li>
-            <li><a href="#" className="hover:text-white transition-colors" style={{ color: '#8FA0B8' }}>Careers</a></li>
+            <li>
+              <Link href="/#waitlist" className="hover:text-white transition-colors" style={{ color: '#8FA0B8' }}>
+                Contact / waitlist
+              </Link>
+            </li>
           </ul>
         </div>
 
-        {/* Legal */}
         <div>
           <h4 className="text-sm font-bold uppercase tracking-wide mb-4" style={{ color: '#8FA0B8' }}>
             Legal
           </h4>
           <ul className="space-y-2 text-sm">
-            <li><a href="#" className="hover:text-white transition-colors" style={{ color: '#8FA0B8' }}>Privacy policy</a></li>
-            <li><a href="#" className="hover:text-white transition-colors" style={{ color: '#8FA0B8' }}>Terms of use</a></li>
-            <li><a href="#" className="hover:text-white transition-colors" style={{ color: '#8FA0B8' }}>Cookie policy</a></li>
-            <li><a href="#" className="hover:text-white transition-colors" style={{ color: '#8FA0B8' }}>Disclaimer</a></li>
+            <li>
+              <span style={{ color: '#8FA0B8' }}>
+                We are a discovery aggregator. Listings link out to source sites. Guides are educational, not legal advice.
+              </span>
+            </li>
           </ul>
         </div>
       </div>

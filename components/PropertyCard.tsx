@@ -1,6 +1,9 @@
+'use client';
+
 import Link from 'next/link';
 import { useState } from 'react';
 import { Property } from '@/lib/rag';
+import { propertyToCanonical } from '@/lib/sources/yoh-snapshot';
 
 const currencySymbols: Record<string, string> = {
   EUR: '€',
@@ -9,13 +12,17 @@ const currencySymbols: Record<string, string> = {
 };
 
 export function PropertyCard({ property }: { property: Property }) {
-  const symbol = currencySymbols[property.currencyCode] || '€';
-  const price = `${symbol}${property.price.toLocaleString('en-US')}`;
+  const canonical = propertyToCanonical(property);
+  const symbol = currencySymbols[canonical.currency] || '€';
+  const price = `${symbol}${canonical.price.toLocaleString('en-US')}`;
   const [favorited, setFavorited] = useState(false);
 
-  const hasPool = /(^|\W)pool(\W|$)/i.test(property.description || '');
+  const hasPool =
+    property.hasPool === true ||
+    Boolean(canonical.extras?.hasPool) ||
+    /(^|\W)pool(\W|$)/i.test(property.description || '');
 
-  const type = (property.title.split(' in ')[0] || 'Property');
+  const type = canonical.property_type;
 
   return (
     <div className="group bg-card border rounded-lg p-2.5 transition-shadow duration-200 hover:bg-card-hover hover:border-card-hoverBorder hover:shadow-cardHover">
@@ -115,12 +122,9 @@ export function PropertyCard({ property }: { property: Property }) {
             .join(' · ')}
         </p>
 
-        {/* Agent-verified line with checkmark */}
-        <p className="text-faint text-[12px] mt-1.5 flex items-center gap-1">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5B6B82" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20 6 9 17l-5-5" />
-          </svg>
-          Agent-verified listing
+        {/* Source attribution — referral aggregator, not "verified" claim */}
+        <p className="text-faint text-[12px] mt-1.5">
+          Via {canonical.source_name}
         </p>
 
         {/* Price + View details */}

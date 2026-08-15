@@ -13,3 +13,9 @@ build/
 /test-results
 /playwright-report
 /.last-run.json
+
+# Runtime ledgers (local MVP)
+/data/leads/*.jsonl
+/data/redirects.jsonl
+!/data/leads/.gitkeep
+!/data/.gitkeep

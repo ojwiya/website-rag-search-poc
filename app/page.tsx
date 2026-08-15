@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { PropertyCard } from '@/components/PropertyCard';
 import { BrandLogo } from '@/components/BrandLogo';
+import { LeadForm } from '@/components/LeadForm';
 import { Property } from '@/lib/rag';
 
 const EXAMPLES = ['Villa with pool, Costa del Sol', 'Properties €300,000 and below', 'New build, sea view'];
@@ -10,15 +12,15 @@ const EXAMPLES = ['Villa with pool, Costa del Sol', 'Properties €300,000 and b
 const FAQS = [
   {
     q: 'What is the average price of an apartment in Spain?',
-    a: 'Average apartment prices vary widely by region — coastal hotspots like the Costa del Sol typically start around €250,000, while inland towns can be significantly lower.',
+    a: 'Average apartment prices vary widely by region — coastal hotspots like the Costa del Sol typically start around €250,000, while inland towns can be significantly lower. Treat these as orientation only; search current listings for live asking prices.',
   },
   {
     q: 'Can foreigners buy property in Spain?',
-    a: 'Yes. There are no restrictions on foreign buyers owning property in Spain, and the process is well established for overseas purchasers.',
+    a: 'Yes. There are no general restrictions on foreign buyers owning residential property in Spain, and the process is well established for overseas purchasers. See our Spain buying guide for NIE, notary, and due-diligence notes — not legal advice.',
   },
   {
     q: 'What taxes and fees should I budget for?',
-    a: 'Budget roughly 10–12% on top of the purchase price for transfer tax, notary, legal fees, and registry costs. Annual running costs are separate.',
+    a: 'Budget beyond the headline price for transfer tax or VAT (resale vs new-build), notary, land registry, lawyer fees, and possible agent fees. Exact percentages differ by autonomous community — confirm locally, and read the Spain buying guide. This is not tax advice.',
   },
   {
     q: 'How many properties fall under €300,000?',
@@ -79,8 +81,8 @@ export default function Home() {
             <BrandLogo variant="header" />
           </a>
           <nav className="flex gap-6">
-            <a href="#" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>Browse</a>
-            <a href="#" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>About</a>
+            <Link href="/" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>Browse</Link>
+            <Link href="/guides/spain" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>Buying guide</Link>
           </nav>
         </div>
       </header>
@@ -94,7 +96,7 @@ export default function Home() {
           Find your next home in the sun
         </h1>
         <p className="text-[15px] mt-3" style={{ color: '#5B6B82' }}>
-          Search thousands of verified listings with natural language.
+          Search overseas and holiday homes in plain English, then view the full listing on the source site.
         </p>
 
         {/* Search pill */}
@@ -238,21 +240,34 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-            <button
-              type="button"
-              className="mt-6 px-6 py-3 text-white text-sm font-semibold rounded-pill transition-colors"
+            <Link
+              href="/guides/spain"
+              className="inline-block mt-6 px-6 py-3 text-white text-sm font-semibold rounded-pill transition-colors"
               style={{ background: '#2B6CF6' }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#1E56D6')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = '#2B6CF6')}
             >
-              Download the guide
-            </button>
+              Read the Spain buying guide
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Waitlist */}
+      <section id="waitlist" className="bg-surface-alt border-t" style={{ borderColor: '#E7EEF8' }}>
+        <div className="max-w-[560px] mx-auto px-6 py-14">
+          <h2 className="text-2xl font-extrabold text-heading text-center tracking-display">
+            Stay in the loop
+          </h2>
+          <p className="mt-3 text-center text-[15px]" style={{ color: '#5B6B82' }}>
+            Join the waitlist for product updates. This is not a booking or agency signup.
+          </p>
+          <div className="mt-6 bg-white border rounded-lg p-6" style={{ borderColor: '#E7EEF8' }}>
+            <LeadForm kind="waitlist" />
           </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="bg-surface-alt">
+      <section id="faq" className="bg-white">
         <div className="max-w-[820px] mx-auto px-6 py-14">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-heading text-center tracking-display">
             Frequently asked questions

@@ -1,0 +1,25 @@
+{
+  "description": "NL search regressions from HANDOFF — used by scripts/agent/run_search_evals.py and Vitest",
+  "queries": [
+    {
+      "id": "and-villa-pool-costa",
+      "q": "Villa with pool, Costa del Sol",
+      "expect": { "maxTotal": 2000, "minTotal": 1, "countryHint": "spain" }
+    },
+    {
+      "id": "exact-3-bed-italy",
+      "q": "3-bed villa with pool in Italy",
+      "expect": { "minTotal": 1, "maxTotal": 500, "beds": 3 }
+    },
+    {
+      "id": "2br-apartment",
+      "q": "2br apartment",
+      "expect": { "minTotal": 100, "beds": 2 }
+    },
+    {
+      "id": "under-300k",
+      "q": "apartment under €300,000",
+      "expect": { "minTotal": 1, "maxPrice": 300000 }
+    }
+  ]
+}

@@ -22,6 +22,8 @@ export interface Property {
   image_count: number;
   thumbnail_url: string | null;
   tag?: string;
+  /** Present on public API rows; derived from the full listing body. */
+  hasPool?: boolean;
 }
 
 interface PropertyData {

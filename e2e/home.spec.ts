@@ -162,8 +162,29 @@ test.describe('Homes in the Sun — e2e', () => {
   test('navigating to a property detail page works', async ({ page }) => {
     await page.goto('/');
     await waitForResults(page);
+    const box = page.getByPlaceholder(/3-bed villa/);
+    await box.fill('villa costa del sol');
+    await box.press('Enter');
+    await expect(page.getByText('"villa costa del sol"')).toBeVisible();
+    await waitForResults(page);
     await page.locator('a:has-text("View details")').first().click();
     await expect(page).toHaveURL(/\/properties\/\d+/);
-    await expect(page.getByText('About this property')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Overview' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /View full listing/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Buying property in Spain/ })).toBeVisible();
+  });
+
+  test('Spain buying guide page loads with disclaimer', async ({ page }) => {
+    await page.goto('/guides/spain');
+    await expect(page.getByRole('heading', { name: /Buying property in Spain/ })).toBeVisible();
+    await expect(page.getByText(/not legal, tax, or financial advice/i)).toBeVisible();
+  });
+
+  test('waitlist requires consent', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'Stay in the loop' })).toBeVisible();
+    await page.locator('#waitlist input[type="email"]').fill('test@example.com');
+    await page.getByRole('button', { name: 'Join waitlist' }).click();
+    await expect(page.getByText('Consent required')).toBeVisible();
   });
 });

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { loadProperties, searchProperties } from '@/lib/rag';
+import { toPublicProperties } from '@/lib/public-listing';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -13,7 +14,7 @@ export async function GET(request: Request) {
   const results = searchProperties(properties, q, 20);
 
   return NextResponse.json({
-    properties: results,
+    properties: toPublicProperties(results),
     total: results.length,
   });
 }

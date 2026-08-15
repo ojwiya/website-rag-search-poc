@@ -4,7 +4,7 @@ import { Footer } from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: 'Homes in the Sun — Find your next home in the sun',
-  description: 'Search thousands of verified overseas property listings with natural language.',
+  description: 'Search overseas and holiday homes in plain English, then view the full listing on the source site.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

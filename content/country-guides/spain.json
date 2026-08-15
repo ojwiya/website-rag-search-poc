@@ -1,0 +1,56 @@
+{
+  "country": "spain",
+  "title": "Buying property in Spain as a foreign buyer",
+  "updated_at": "2026-08-13",
+  "disclaimer": "Educational overview only — not legal, tax, or financial advice. Rules and rates change; verify with a Spanish lawyer, tax adviser, and regulated currency provider before you commit.",
+  "sections": [
+    {
+      "id": "who-can-buy",
+      "title": "Who can buy",
+      "body": "Non-residents, including many UK and other foreign buyers, can generally purchase residential property in Spain. You will normally need an NIE (foreigner identification number) to complete the purchase and related tax filings. Residency or visa rules are separate from the right to buy."
+    },
+    {
+      "id": "process",
+      "title": "Typical purchase steps",
+      "body": "1) Shortlist and viewings. 2) Reservation / private contract with a deposit (often non-refundable — take advice first). 3) Due diligence via a lawyer (title, debts, community fees, licences). 4) Sign the escritura at a notary and register the property. Timelines vary by region and whether the home is resale or new-build."
+    },
+    {
+      "id": "costs",
+      "title": "Costs and taxes (ballpark)",
+      "body": "Budget beyond the headline price for transfer tax or VAT (depending on resale vs new-build), notary, land registry, lawyer fees, and possible agent fees. Exact percentages differ by autonomous community and property type — treat online averages as orientation only and confirm locally."
+    },
+    {
+      "id": "legal",
+      "title": "Lawyer and notary",
+      "body": "A independent lawyer acting for you (not only the seller) should check ownership, encumbrances, planning, and community obligations. The notary formalises the deed; registration perfects your title. Do not skip due diligence because a listing looks complete online."
+    },
+    {
+      "id": "fx",
+      "title": "Currency and transfers",
+      "body": "If your funds are in GBP or another currency, exchange-rate moves between reservation and completion can change the real cost in your home currency. Many buyers use a specialist FX provider for deposits and completion payments to lawyers or notaries, and plan transfer timing early."
+    },
+    {
+      "id": "checklist",
+      "title": "Quick checklist",
+      "body": "NIE · Spanish bank arrangements if needed · Independent lawyer · Full cost schedule · Community / IBI / utilities checks · FX plan for each payment milestone · Confirm what is included (furniture, parking, storage)."
+    }
+  ],
+  "sources": [
+    {
+      "label": "Lumon — Buying property in Spain",
+      "url": "https://www.lumonpay.com/buying-property-in-spain/"
+    },
+    {
+      "label": "Lumon — Spanish property tax for UK buyers",
+      "url": "https://www.lumonpay.com/articles/spanish-property-tax-for-uk-buyers/"
+    },
+    {
+      "label": "Your Overseas Home — overseas buying resources",
+      "url": "https://www.youroverseashome.com/"
+    },
+    {
+      "label": "UK government — living in Spain",
+      "url": "https://www.gov.uk/guidance/living-in-spain"
+    }
+  ]
+}
