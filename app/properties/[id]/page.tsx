@@ -45,9 +45,9 @@ export default async function PropertyDetail({ params }: { params: { id: string 
     <main className="min-h-screen bg-surface-alt">
       <header className="sticky top-0 z-50 bg-surface border-b" style={{ borderColor: '#E7EEF8' }}>
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <a href="/" aria-label="Homes in the Sun — home">
+          <Link href="/" aria-label="Homes in the Sun — home">
             <BrandLogo variant="header" />
-          </a>
+          </Link>
           <nav className="flex gap-6">
             <Link href="/" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>Browse</Link>
             <Link href="/guides/spain" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>Buying guide</Link>

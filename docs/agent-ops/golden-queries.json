@@ -20,6 +20,26 @@
       "id": "under-300k",
       "q": "apartment under €300,000",
       "expect": { "minTotal": 1, "maxPrice": 300000 }
+    },
+    {
+      "id": "less-than-300k",
+      "q": "apartment less than €300,000",
+      "expect": { "minTotal": 1, "maxPrice": 300000 }
+    },
+    {
+      "id": "cheaper-than-300k",
+      "q": "apartment cheaper than 300k",
+      "expect": { "minTotal": 1, "maxPrice": 300000 }
+    },
+    {
+      "id": "between-200k-400k",
+      "q": "house between 200k and 400k",
+      "expect": { "minTotal": 1, "minPrice": 200000, "maxPrice": 400000 }
+    },
+    {
+      "id": "at-least-3-bed-spain",
+      "q": "at least 3 bedroom house spain",
+      "expect": { "minTotal": 1, "minBeds": 3 }
     }
   ]
 }

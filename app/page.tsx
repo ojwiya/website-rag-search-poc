@@ -28,11 +28,6 @@ const FAQS = [
   },
 ];
 
-function Price({ value, currencyCode }: { value: number; currencyCode: string }) {
-  const symbol = { EUR: '€', GBP: '£', USD: '$' }[currencyCode] || '€';
-  return <>{symbol}{value.toLocaleString('en-US')}</>;
-}
-
 export default function Home() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [total, setTotal] = useState(0);
@@ -77,9 +72,9 @@ export default function Home() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-surface border-b" style={{ borderColor: '#E7EEF8' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <a href="/" aria-label="Homes in the Sun — home">
+          <Link href="/" aria-label="Homes in the Sun — home">
             <BrandLogo variant="header" />
-          </a>
+          </Link>
           <nav className="flex gap-6">
             <Link href="/" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>Browse</Link>
             <Link href="/guides/spain" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>Buying guide</Link>

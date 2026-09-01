@@ -7,12 +7,14 @@ tags: [architecture, nextjs, homes-in-the-sun]
 
 # Architecture Overview
 
-Homes in the Sun is a **Next.js 14 (App Router) + React 18** application deployed to Vercel (see `vercel.json`: `framework: nextjs`, API routes capped at 30s max duration). There is no database and no vector store in the MVP: the entire listing index is a **frozen JSON snapshot** read from disk at request time and cached in the module scope.
+Homes in the Sun is a **Next.js 14 (App Router) + React 18** application deployed to Vercel (see `vercel.json`: `framework: nextjs`, API routes capped at 30s max duration). There is no ChromaDB process: structured NL intent stays local, and rank/retrieve of the full listing corpus runs in Zilliz/Milvus (BM25) when configured, else a compact TF-IDF fallback.
 
 The architecture is deliberately small and "serverless-friendly":
 
-- `rag/properties_data.json` — frozen M0 index (~11,960 listings with full legacy fields, EUR/GBP prices, geo, thumbnails, descriptions).
-- `lib/rag.ts` — TypeScript search (a port of the older `rag_pipeline.py`) that replaces ChromaDB for Vercel: structured filters + weighted text scoring, no external vector dependency.
+- `rag/properties_data.json` — full M0 hydration snapshot (~11,960 listings; `properties_data.full.json` is the gitignored local copy of the same dump).
+- `lib/milvus.ts` — REST client to Zilliz (`ZILLIZ_URI` + `ZILLIZ_TOKEN`); BM25 search, no embedding model on Vercel.
+- `rag/vector-index.json` — sparse TF-IDF fallback used when Milvus env is missing (`npm test`).
+- `lib/rag.ts` — TypeScript comparators (`parseSearchIntent`, `intentToWhere`, `intentToMilvusExpr`, AND-gate) plus local `searchProperties`.
 - `lib/canonical.ts` — the thin referral schema (`CanonicalListing`) that UI and APIs must use; source-specific fields live only in adapters.
 - `lib/sources/yoh-snapshot.ts` — the M0 adapter mapping legacy `Property` rows into `CanonicalListing`.
 - `app/` — server-rendered pages (homepage, `properties/[id]`, `guides/[country]`) plus API routes.
@@ -26,14 +28,15 @@ sequenceDiagram
     participant H as Homepage (client)
     participant P as /api/properties
     participant R as lib/rag.ts
+    participant M as lib/milvus.ts
     participant S as M0 snapshot (JSON)
     participant D as Detail page
     participant RD as /api/redirect
 
     U->>H: natural-language query
     H->>P: GET /api/properties?q=&page=&limit=&sort=
-    P->>R: filterProperties (structured)
-    P->>R: searchProperties (text score, AND-logic)
+    P->>M: searchListings (Milvus BM25 or local TF-IDF)
+    P->>R: filterProperties (structured API params)
     P-->>H: { properties, total, hasMore } (public rows)
     H->>D: click "View details" (property id)
     D->>D: propertyToCanonical + getCountryGuide
@@ -43,7 +46,7 @@ sequenceDiagram
 
 Key design choices visible in this flow:
 
-- **Search runs entirely in-process**: `loadProperties()` caches the parsed JSON in a module-level variable (`lib/rag.ts`), which persists across requests within the same serverless lambda.
+- **Search is async at the API boundary**: `/api/properties` and `/api/search` await `searchListings`. Comparators stay in `lib/rag.ts`. When `ZILLIZ_TOKEN` is unset, search falls back to in-process TF-IDF.
 - **`/api/properties` is the workhorse**: it handles `id` lookup, structured filters, text search, server-side sorting (`best`/`price-asc`/`price-desc`/`newest`), and pagination over the **full** matched set so totals and ordering stay consistent across pages (fixed by commit `93ff183` and `3313b5e`).
 - **Public rows are thin**: `toPublicProperties()` maps each row through the canonical adapter and replaces the fat description with a 220-char snippet plus absolute canonical URL (`lib/public-listing.ts`). The detail page shows only this teaser, per the referral posture in [Business Model and Data Rights](/openwiki/architecture/business-model.md).
 - **Outbound is the "done" path**: the primary CTA is `View full listing on <source>` through `/api/redirect`, which validates the target, appends a click log line, and 302-redirects. See [Redirects and Leads](/openwiki/workflows/redirects-and-leads.md).

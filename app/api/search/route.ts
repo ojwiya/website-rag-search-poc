@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { loadProperties, searchProperties } from '@/lib/rag';
+import { loadProperties } from '@/lib/rag';
+import { getMilvusPort, searchListings } from '@/lib/milvus';
 import { toPublicProperties } from '@/lib/public-listing';
 
 export async function GET(request: Request) {
@@ -11,7 +12,7 @@ export async function GET(request: Request) {
   }
 
   const properties = loadProperties();
-  const results = searchProperties(properties, q, 20);
+  const results = await searchListings(properties, q, 20, getMilvusPort());
 
   return NextResponse.json({
     properties: toPublicProperties(results),

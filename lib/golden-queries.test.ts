@@ -12,8 +12,10 @@ const spec = JSON.parse(
     expect?: {
       minTotal?: number;
       maxTotal?: number;
+      minPrice?: number;
       maxPrice?: number;
       beds?: number;
+      minBeds?: number;
     };
   }>;
 };
@@ -28,6 +30,9 @@ describe('golden NL queries (corpus)', () => {
       const exp = q.expect || {};
       if (exp.minTotal != null) expect(full.length).toBeGreaterThanOrEqual(exp.minTotal);
       if (exp.maxTotal != null) expect(full.length).toBeLessThanOrEqual(exp.maxTotal);
+      if (exp.minPrice != null) {
+        for (const p of sample) expect(p.price).toBeGreaterThanOrEqual(exp.minPrice);
+      }
       if (exp.maxPrice != null) {
         for (const p of sample) expect(p.price).toBeLessThanOrEqual(exp.maxPrice);
       }
@@ -35,7 +40,12 @@ describe('golden NL queries (corpus)', () => {
         const mismatch = sample.filter(
           (p) => p.bedrooms != null && p.bedrooms !== exp.beds
         );
-        expect(mismatch.length).toBeLessThanOrEqual(sample.length * 0.5);
+        expect(mismatch).toHaveLength(0);
+      }
+      if (exp.minBeds != null) {
+        for (const p of sample) {
+          if (p.bedrooms != null) expect(p.bedrooms).toBeGreaterThanOrEqual(exp.minBeds);
+        }
       }
     });
   }

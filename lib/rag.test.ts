@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { searchProperties, filterProperties, inferPropertyType, loadProperties, type Property } from './rag';
+import { searchProperties, filterProperties, inferPropertyType, loadProperties, parseSearchIntent, intentToWhere, intentToMilvusExpr, type Property } from './rag';
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -105,6 +105,45 @@ describe('searchProperties — price intent in natural language', () => {
   it('"house below 500000" caps price at €500k', () => {
     const r = searchProperties(fixtures, 'house below 500000', 20);
     for (const p of r) expect(p.eurPrice).toBeLessThanOrEqual(500000);
+  });
+
+  it('"apartment less than €300,000" caps price and does not require "than" in the listing', () => {
+    const r = searchProperties(fixtures, 'apartment less than €300,000', 20);
+    expect(r.length).toBeGreaterThan(0);
+    for (const p of r) {
+      expect(p.eurPrice).toBeLessThanOrEqual(300000);
+      expect(inferPropertyType(p.title)).toBe('apartment');
+    }
+    const ids = r.map((p) => p.id);
+    expect(ids).toContain(7); // €38k Lisbon apartment — description has no "than"
+    expect(ids).not.toContain(8); // €1.5M apartment
+    expect(ids).not.toContain(9); // house, not apartment
+  });
+
+  it('"house between 200k and 400k" is an inclusive price range', () => {
+    const r = searchProperties(fixtures, 'house between 200k and 400k', 20);
+    expect(r.length).toBeGreaterThan(0);
+    for (const p of r) {
+      expect(p.eurPrice).toBeGreaterThanOrEqual(200000);
+      expect(p.eurPrice).toBeLessThanOrEqual(400000);
+    }
+    const ids = r.map((p) => p.id);
+    expect(ids).toContain(10); // €200k on the floor
+    expect(ids).not.toContain(11); // €180k below the floor
+    expect(ids).not.toContain(4); // €425k above the ceiling
+  });
+
+  it('"from 200k to 400k" is a range, not a €400k floor', () => {
+    const r = searchProperties(fixtures, 'house from 200k to 400k', 20);
+    expect(r.length).toBeGreaterThan(0);
+    for (const p of r) {
+      expect(p.eurPrice).toBeGreaterThanOrEqual(200000);
+      expect(p.eurPrice).toBeLessThanOrEqual(400000);
+    }
+    const ids = r.map((p) => p.id);
+    expect(ids).toContain(10);
+    expect(ids).not.toContain(11);
+    expect(ids).not.toContain(4);
   });
 });
 
@@ -222,6 +261,59 @@ describe('searchProperties — bedroom intent in natural language', () => {
       expect(hay).toContain('pool');
     }
   });
+
+  it('"at least 3 bedrooms spain" includes 3+ (not exact-only)', () => {
+    const r = searchProperties(fixtures, 'at least 3 bedrooms spain', 20);
+    expect(r.length).toBeGreaterThan(0);
+    for (const p of r) {
+      expect(p.country_slug).toBe('spain');
+      expect(p.bedrooms || 0).toBeGreaterThanOrEqual(3);
+    }
+    const ids = r.map((p) => p.id);
+    expect(ids).toContain(10); // 3-bed
+    expect(ids).toContain(4); // 4-bed villa
+    expect(ids).not.toContain(11); // 2-bed
+  });
+
+  it('"3+ bedroom house spain" is the same min-beds intent as at least 3', () => {
+    const r = searchProperties(fixtures, '3+ bedroom house spain', 20);
+    expect(r.length).toBeGreaterThan(0);
+    for (const p of r) {
+      expect(p.country_slug).toBe('spain');
+      expect(p.bedrooms || 0).toBeGreaterThanOrEqual(3);
+    }
+    expect(r.map((p) => p.id)).toContain(4);
+    expect(r.map((p) => p.id)).not.toContain(11);
+  });
+
+  it('"less than 4 bedrooms spain" excludes 4+ and does not treat 4 as a €4 price', () => {
+    const r = searchProperties(fixtures, 'less than 4 bedrooms spain', 20);
+    expect(r.length).toBeGreaterThan(0);
+    for (const p of r) {
+      expect(p.country_slug).toBe('spain');
+      expect(p.bedrooms || 0).toBeLessThan(4);
+    }
+    const ids = r.map((p) => p.id);
+    expect(ids).toContain(10); // 3-bed
+    expect(ids).toContain(11); // 2-bed
+    expect(ids).not.toContain(4); // 4-bed
+    expect(ids).not.toContain(5); // 5-bed
+  });
+
+  it('"between 2 and 4 bedrooms spain" is an inclusive bed range', () => {
+    const r = searchProperties(fixtures, 'between 2 and 4 bedrooms spain', 20);
+    expect(r.length).toBeGreaterThan(0);
+    for (const p of r) {
+      expect(p.country_slug).toBe('spain');
+      expect(p.bedrooms || 0).toBeGreaterThanOrEqual(2);
+      expect(p.bedrooms || 0).toBeLessThanOrEqual(4);
+    }
+    const ids = r.map((p) => p.id);
+    expect(ids).toContain(11); // 2
+    expect(ids).toContain(10); // 3
+    expect(ids).toContain(4); // 4
+    expect(ids).not.toContain(5); // 5
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -245,6 +337,67 @@ describe('filterProperties', () => {
       expect(p.eurPrice).toBeLessThanOrEqual(500000);
     }
     expect(r.map((p) => p.id)).toEqual(expect.arrayContaining([4, 6, 10]));
+  });
+
+  it('applies maxBeds as an inclusive ceiling', () => {
+    const r = filterProperties(fixtures, { country: 'spain', maxBeds: 3 });
+    expect(r.length).toBeGreaterThan(0);
+    for (const p of r) {
+      expect(p.country_slug).toBe('spain');
+      expect(p.bedrooms || 0).toBeLessThanOrEqual(3);
+    }
+    const ids = r.map((p) => p.id);
+    expect(ids).toContain(10);
+    expect(ids).toContain(11);
+    expect(ids).not.toContain(4);
+  });
+});
+
+describe('intentToWhere — Chroma-style metadata predicates', () => {
+  it('maps "apartment less than €300,000" to a price ceiling', () => {
+    const { intent } = parseSearchIntent('apartment less than €300,000');
+    expect(intentToWhere(intent)).toEqual({ price: { $lte: 300000 } });
+  });
+
+  it('maps "between 200k and 400k" to an inclusive price $and', () => {
+    const { intent } = parseSearchIntent('house between 200k and 400k');
+    expect(intentToWhere(intent)).toEqual({
+      $and: [{ price: { $gte: 200000 } }, { price: { $lte: 400000 } }],
+    });
+  });
+
+  it('maps "at least 3 bedrooms spain" to min beds + country', () => {
+    const { intent } = parseSearchIntent('at least 3 bedrooms spain');
+    expect(intentToWhere(intent)).toEqual({
+      $and: [{ bedrooms: { $gte: 3 } }, { country: { $eq: 'spain' } }],
+    });
+  });
+});
+
+describe('intentToMilvusExpr', () => {
+  it('maps "apartment less than €300,000" to a price ceiling', () => {
+    const { intent } = parseSearchIntent('apartment less than €300,000');
+    expect(intentToMilvusExpr(intent)).toBe('price <= 300000');
+  });
+
+  it('maps "between 200k and 400k" to an inclusive range', () => {
+    const { intent } = parseSearchIntent('house between 200k and 400k');
+    expect(intentToMilvusExpr(intent)).toBe('price >= 200000 and price <= 400000');
+  });
+
+  it('maps "at least 3 bedrooms spain" to min beds + country', () => {
+    const { intent } = parseSearchIntent('at least 3 bedrooms spain');
+    expect(intentToMilvusExpr(intent)).toBe('bedrooms >= 3 and country == "spain"');
+  });
+
+  it('maps exact "3 bedroom house spain" to bedrooms == 3', () => {
+    const { intent } = parseSearchIntent('3 bedroom house spain');
+    expect(intentToMilvusExpr(intent)).toBe('bedrooms == 3 and country == "spain"');
+  });
+
+  it('returns empty string when there are no structured predicates', () => {
+    const { intent } = parseSearchIntent('villa with pool');
+    expect(intentToMilvusExpr(intent)).toBe('');
   });
 });
 
@@ -296,9 +449,9 @@ describe('searchProperties — integration over real properties_data.json', () =
     expect(coverage(r, (p) => (p.description || '').toLowerCase().includes('sea'))).toBeGreaterThanOrEqual(19);
   });
 
-  it('"3 bedroom house spain" -> >= 3 beds AND country spain', () => {
+  it('"3 bedroom house spain" -> EXACTLY 3 beds AND country spain', () => {
     const r = topN('3 bedroom house spain');
-    expect(coverage(r, (p) => (p.bedrooms || 0) >= 3 && p.country_slug === 'spain')).toBe(20);
+    expect(coverage(r, (p) => p.bedrooms === 3 && p.country_slug === 'spain')).toBe(20);
   });
 
   it('"affordable apartment portugal" -> portugal & <= €250k', () => {

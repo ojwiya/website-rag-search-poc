@@ -14,7 +14,7 @@ This wiki is the OpenWiki knowledge base for the repository. Start here, then fo
 ## What the repo does
 
 - **Next.js 14 + React 18 app** (App Router) deployed on Vercel. See [Architecture Overview](/openwiki/architecture/overview.md).
-- **Natural-language property search** over a **frozen M0 snapshot** (`rag/properties_data.json`, ~11,960 listings) — no ChromaDB, pure TypeScript scoring tuned for serverless. See [Search and Data](/openwiki/architecture/search-and-data.md).
+- **Natural-language property search** over the **full M0 snapshot** (~11,960 listings). Zilliz/Milvus is the search source of truth (BM25 + scalar filters); `parseSearchIntent` / AND-gate stay local. Offline TF-IDF fallback keeps `npm test` green without a cluster. See [Search and Data](/openwiki/architecture/search-and-data.md).
 - **Thin referral listing model**: a canonical schema (`lib/canonical.ts`) plus source adapters (`lib/sources/yoh-snapshot.ts`). See [API Surface](/openwiki/workflows/api-surface.md).
 - **Tracked outbound redirects** (`/api/redirect`) and **phase-gated leads** (`/api/leads`) — the Phase-1 commercial engine. See [Redirects and Leads](/openwiki/workflows/redirects-and-leads.md).
 - **Country buyer guides** (JSON under `content/country-guides/`, Spain shipped) surfaced on detail pages.
@@ -29,7 +29,7 @@ This wiki is the OpenWiki knowledge base for the repository. Start here, then fo
 | App routes & pages | `app/` | Homepage, property detail, country guide pages, API routes |
 | Shared UI | `components/` | PropertyCard, PropertyActions, CountryGuidePanel, LeadForm, Footer, BrandLogo |
 | Core logic | `lib/` | `rag.ts` (search), `canonical.ts` (schema), `urls.ts`, `guides.ts`, `public-listing.ts`, `sources/yoh-snapshot.ts` |
-| Data | `rag/properties_data.json` | Frozen M0 index (11,960 listings) |
+| Data | `rag/properties_data.json` + `rag/vector-index.json` | Full M0 hydration (~11,960) + local TF-IDF fallback |
 | Guides content | `content/country-guides/` | Structured country buyer guides (Spain shipped) |
 | MVP docs | `docs/mvp/` | Product, commercials, data-rights, phased rollout, metrics |
 | Agent ops | `docs/agent-ops/` | Hermes SOUL, policies, jobs, golden queries |

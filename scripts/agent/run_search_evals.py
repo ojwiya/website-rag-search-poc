@@ -37,21 +37,34 @@ def main() -> int:
         if "maxTotal" in exp and total > exp["maxTotal"]:
             ok = False
             reasons.append(f"total {total} > max {exp['maxTotal']}")
+        if "minPrice" in exp and props:
+            bad = [p for p in props if p.get("price", 0) < exp["minPrice"]]
+            if bad:
+                ok = False
+                reasons.append(f"{len(bad)} results under minPrice")
         if "maxPrice" in exp and props:
             bad = [p for p in props if p.get("price", 0) > exp["maxPrice"]]
             if bad:
                 ok = False
                 reasons.append(f"{len(bad)} results over maxPrice")
+        if "minBeds" in exp and props:
+            bad = [
+                p
+                for p in props
+                if p.get("bedrooms") is not None and p.get("bedrooms") < exp["minBeds"]
+            ]
+            if bad:
+                ok = False
+                reasons.append(f"{len(bad)} results under minBeds")
         if "beds" in exp and props:
-            # beds filter is on search parse; sample first page
             mismatch = [
                 p
                 for p in props
                 if p.get("bedrooms") is not None and p.get("bedrooms") != exp["beds"]
             ]
-            if len(mismatch) > len(props) * 0.5:
+            if mismatch:
                 ok = False
-                reasons.append(f"many beds mismatches vs {exp['beds']}")
+                reasons.append(f"{len(mismatch)} beds mismatches vs {exp['beds']}")
         status = "PASS" if ok else "FAIL"
         print(f"{status} {q['id']}: total={total} q={q['q']!r} {'; '.join(reasons)}")
         if not ok:

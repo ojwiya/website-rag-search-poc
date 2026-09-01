@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { loadProperties, searchProperties, filterProperties } from '@/lib/rag';
+import { loadProperties, filterProperties } from '@/lib/rag';
+import { getMilvusPort, searchListings } from '@/lib/milvus';
 import { getPublicPropertyById, toPublicProperties } from '@/lib/public-listing';
 
 export async function GET(request: Request) {
@@ -21,30 +22,31 @@ export async function GET(request: Request) {
   const minPrice = searchParams.get('minPrice');
   const maxPrice = searchParams.get('maxPrice');
   const minBeds = searchParams.get('minBeds');
+  const maxBeds = searchParams.get('maxBeds');
   const propertyType = searchParams.get('type');
   const country = searchParams.get('country');
   const sort = searchParams.get('sort') || 'best';
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '20');
 
-  let results = loadProperties();
-
-  // Apply structured filters first
-  results = filterProperties(results, {
+  const apiFilters = {
     minPrice: minPrice ? parseFloat(minPrice) : undefined,
     maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
     minBeds: minBeds ? parseInt(minBeds) : undefined,
+    maxBeds: maxBeds ? parseInt(maxBeds) : undefined,
     propertyType: propertyType || undefined,
     country: country || undefined,
-  });
+  };
 
-  // Then semantic/text search if query provided.
-  // Pass a large limit so searchProperties returns the FULL matched set
-  // (it slices internally to `limit`); we compute the true total from the
-  // full set and paginate ourselves below.
+  let results = loadProperties();
+
+  // NL search is async at this boundary so Zilliz can rank the full corpus.
+  // Comparators (parseSearchIntent / AND-gate) stay in lib/rag.ts.
   if (q.trim()) {
-    results = searchProperties(results, q, 1_000_000);
+    results = await searchListings(results, q, 1_000_000, getMilvusPort());
   }
+
+  results = filterProperties(results, apiFilters);
 
   // Sort the FULL matched set before paginating so ordering is consistent
   // across pages (not just within the current page).
@@ -61,7 +63,7 @@ export async function GET(request: Request) {
       break;
     case 'best':
     default:
-      // Leave in relevance order returned by searchProperties.
+      // Leave in relevance order returned by searchListings.
       break;
   }
 

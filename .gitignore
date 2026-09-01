@@ -2,6 +2,8 @@ node_modules/
 __pycache__/
 venv/
 .env
+.env.*
+!.env.example
 *.pyc
 .DS_Store
 .next/
@@ -14,6 +16,12 @@ build/
 /test-results
 /playwright-report
 /.last-run.json
+
+# Full M0 dump kept locally; properties_data.json is the hydration copy (also full).
+/rag/properties_data.full.json
+
+# Vendored skill-doctor visual bundle (not needed to run the skill).
+/skills/skill-doctor/assets/pierre-diffs.js
 
 # Runtime ledgers (local MVP)
 /data/leads/*.jsonl
