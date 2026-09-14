@@ -167,7 +167,7 @@ flowchart TD
 
 ## Change guidance
 
-- **Intent parsing changes** (price/country/bedroom/AND-logic) must keep `lib/rag.test.ts` green — it is the regression net for every search rule; golden queries in `docs/agent-ops/golden-queries.json` add end-to-end coverage via `scripts/agent/run_search_evals.py` (see [Agent Ops](/openwiki/operations/agent-ops.md)).
+- **Intent parsing changes** (price/country/bedroom/AND-logic) must keep `lib/rag.test.ts` and `lib/search-correctness.test.ts` green — they are the regression net for every search rule; golden queries in `docs/agent-ops/golden-queries.json` add end-to-end coverage via `scripts/agent/run_search_evals.py` (see [Agent Ops](/openwiki/operations/agent-ops.md)). Measured golden totals and remaining type-keyword precision: [NLP Search Correctness](/openwiki/testing/nlp-search-correctness.md).
 - **New source adapters**: add `lib/sources/<name>.ts` mapping into `CanonicalListing`; do not leak source-specific fields into components (policy: `docs/agent-ops/policies/engineering.md`).
 - **Corpus changes** (replacing `rag/properties_data.json`) are draft-first per `docs/agent-ops/policies/deploy-and-data.md`; `scripts/agent/corpus_stats.py` reports mtime/count/country histogram for governance.
 - The current search source of truth is **Zilliz/Milvus** over the full M0 snapshot (~11,960 listings). Local TF-IDF is the offline fallback. Rebuild/ingest via `scripts/rag/shed_and_embed.py`.

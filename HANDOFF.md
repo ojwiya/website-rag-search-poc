@@ -126,7 +126,7 @@ Goldens: `docs/agent-ops/golden-queries.json`. Structured price/bed/country filt
 
 Last verified 2026-08-27: **oxlint clean**, **123/123 Vitest**.
 
-NLP audit 2026-08-26 (local TF-IDF + live Zilliz on :3002): comparators are correct on the full corpus. Remaining precision: `apartment` is an AND keyword on description, so some land/houses that mention apartments can rank in. Do not judge AND-gate from public API snippets.
+NLP audit 2026-08-26 (local TF-IDF + live Zilliz on :3002): comparators are correct on the full corpus. Remaining precision: `apartment` is an AND keyword on description, so some land/houses that mention apartments can rank in. Do not judge AND-gate from public API snippets. Full write-up: `openwiki/testing/nlp-search-correctness.md`.
 
 ## Key paths
 
@@ -143,6 +143,7 @@ NLP audit 2026-08-26 (local TF-IDF + live Zilliz on :3002): comparators are corr
 | Redirect / leads | `GET /api/redirect`, `POST /api/leads` |
 | Oxlint | `.oxlintrc.json`, `.github/workflows/code-checks.yml` |
 | Project skills | `skills/`, `.agents/skills/anti-ui-slop/` |
+| NLP search correctness audit | `openwiki/testing/nlp-search-correctness.md` |
 | MVP / agent-ops | `docs/mvp/`, `docs/agent-ops/` |
 
 Buyer-agent contracts (no chat UI): `search`, `get_listing`, `get_country_guide`, `redirect` — `docs/mvp/buyer-agent-foundation.md`.

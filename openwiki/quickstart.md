@@ -20,7 +20,7 @@ This wiki is the OpenWiki knowledge base for the repository. Start here, then fo
 - **Country buyer guides** (JSON under `content/country-guides/`, Spain shipped) surfaced on detail pages.
 - **Hermes agent ops**: six recurring jobs and a policy set that run day-to-day operations. See [Agent Ops](/openwiki/operations/agent-ops.md).
 - **Legal posture**: thin index, attribution, no fat mega-portal rescrape. See [Business Model and Data Rights](/openwiki/architecture/business-model.md).
-- **Testing**: Vitest unit/integration suites for search and canonical mapping, plus a Playwright e2e suite. See [Testing Overview](/openwiki/testing/overview.md).
+- **Testing**: Vitest unit/integration suites for search and canonical mapping, plus a Playwright e2e suite. See [Testing Overview](/openwiki/testing/overview.md). NLP comparator audit (goldens, corpus violations, remaining type-keyword leak): [NLP Search Correctness](/openwiki/testing/nlp-search-correctness.md).
 
 ## Repository map
 

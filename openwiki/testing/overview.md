@@ -62,6 +62,8 @@ Note the tests are DOM/UX-focused — they assert search behavior through the re
 
 `docs/agent-ops/golden-queries.json` is the single source for search regressions, consumed by BOTH the eval script and (conceptually) the Vitest intent tests. `run_search_evals.py` fetches `/api/properties?q=...` against `BASE_URL` (default `http://127.0.0.1:3000`) and checks `minTotal`/`maxTotal`/`maxPrice`/`beds`; exits 1 on any failure. The `homes-search-quality` Hermes cron runs it daily — see [Agent Ops](/openwiki/operations/agent-ops.md).
 
+Full-corpus hard-filter checks (zero price/bed/country violations, word-boundary `cheap` vs `cheaper`, punctuation-stripped AND tokens) live in `lib/search-correctness.test.ts`. The 26 Aug 2026 audit with live Zilliz totals is [NLP Search Correctness](nlp-search-correctness.md).
+
 ```mermaid
 flowchart LR
     G[golden-queries.json] --> P[run_search_evals.py]
