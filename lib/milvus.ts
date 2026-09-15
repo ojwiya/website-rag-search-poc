@@ -95,7 +95,7 @@ async function zillizPost(
   if (!res.ok || (code != null && code !== 0 && code !== 200)) {
     throw new Error(json.message || `Zilliz ${path} failed: ${res.status}`);
   }
-  return json;
+  return { data: json.data };
 }
 
 export function createRestMilvusPort(opts: RestMilvusOptions): MilvusPort {
