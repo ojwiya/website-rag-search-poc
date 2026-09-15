@@ -64,6 +64,7 @@ export type SearchIntent = {
   price?: { min?: number; max?: number };
   beds?: { min?: number; max?: number; exact?: number };
   country?: string;
+  propertyType?: string;
 };
 
 export function filterProperties(
@@ -107,6 +108,13 @@ export function inferPropertyType(title: string): string {
 const PRICE_INTENT: { words: string[]; min?: number; max?: number }[] = [
   { words: ['cheap', 'affordable', 'budget', 'inexpensive'], max: 250000 },
   { words: ['luxury', 'expensive', 'premium', 'high-end', 'highend'], min: 1000000 },
+];
+
+// Specific dwelling nouns -> title-type filter (not AND-keywords on description).
+// "house" / "home" stay generic (see GENERIC_NOUNS) so they do not exclude villas.
+const TYPE_MAP: { words: string[]; type: string }[] = [
+  { words: ['apartment', 'apartments', 'flat', 'flats'], type: 'apartment' },
+  { words: ['villa', 'villas'], type: 'villa' },
 ];
 
 // Country words -> country_slug so "france" filters by country, not by substring.
@@ -216,6 +224,14 @@ export function parseSearchIntent(query: string): {
     if (c.words.some((w) => q.includes(w))) {
       intent.country = c.slug;
       c.words.forEach((w) => handled.add(w));
+      break;
+    }
+  }
+
+  for (const row of TYPE_MAP) {
+    if (row.words.some((w) => hasWord(q, w))) {
+      intent.propertyType = row.type;
+      row.words.forEach((w) => handled.add(w));
       break;
     }
   }
@@ -376,6 +392,7 @@ function intentToFilters(intent: SearchIntent): FilterOptions {
     maxBeds: intent.beds?.max,
     beds: intent.beds?.exact,
     country: intent.country,
+    propertyType: intent.propertyType,
   };
 }
 
@@ -415,7 +432,8 @@ function hasStructuredFilters(filters: FilterOptions): boolean {
     filters.minBeds !== undefined ||
     filters.maxBeds !== undefined ||
     filters.beds !== undefined ||
-    Boolean(filters.country)
+    Boolean(filters.country) ||
+    Boolean(filters.propertyType)
   );
 }
 

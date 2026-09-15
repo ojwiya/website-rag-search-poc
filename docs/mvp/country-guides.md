@@ -22,4 +22,5 @@ Required fields: `country`, `title`, `updated_at`, `sections[]`, `sources[]`, `d
 ## MVP order
 
 1. Spain (`spain.json`) — ~65% of current index
-2. Portugal, France, Italy, Cyprus — stubs later
+2. Portugal (`portugal.json`) — drafted 15 Sep 2026
+3. France, Italy, Cyprus — stubs later

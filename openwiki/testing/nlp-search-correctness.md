@@ -74,11 +74,16 @@ Hit counts for the two broken queries. Source: `GET /api/properties` on 26 Aug 2
 | Costa del Sol + pool | 652 | 1432 |
 | cheaper than 300k | 1648 | 2460 |
 
-## Still imprecise (not a filter leak)
+## Type filter (landed after this audit)
 
-### Type is an AND keyword, not a type field
+As of 15 Sep 2026, `parseSearchIntent` sets `propertyType` for `apartment`/`flat` and `villa` and consumes those tokens so they are not AND-keywords on description. Local TF-IDF totals on the same corpus:
 
-`apartment under €300,000` returns 2460 rows, all ≤ €300k, but **388** titles are land/houses whose description mentions apartments (example: Land in Vila Nova da Baronia, €28k). `filterProperties` can take `propertyType`; `parseSearchIntent` never sets it. Specific type words stay in the residual AND-gate and can match description text.
+| Query | 26 Aug (AND keyword) | 15 Sep (title type) |
+|---|---|---|
+| apartment cheaper than 300k | 2460 | 1952 |
+| Villa with pool, Costa del Sol | 1432 | 723 |
+
+`house` remains generic and does not set `propertyType`. Zilliz has no type scalar; the title-type hard filter runs after hydration.
 
 ### Public snippets hide AND evidence
 

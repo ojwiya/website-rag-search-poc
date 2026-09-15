@@ -4,6 +4,7 @@ import {
   getSearchPlan,
   loadProperties,
   searchProperties,
+  inferPropertyType,
   type SearchIntent,
 } from './rag';
 
@@ -13,15 +14,15 @@ function intentOf(q: string): SearchIntent {
 
 describe('parseSearchIntent — comparator correctness', () => {
   it.each([
-    ['apartment under €300,000', { price: { max: 300000 } }],
-    ['apartment less than €300,000', { price: { max: 300000 } }],
-    ['apartment cheaper than 300k', { price: { max: 300000 } }],
-    ['apartment up to €300,000', { price: { max: 300000 } }],
+    ['apartment under €300,000', { price: { max: 300000 }, propertyType: 'apartment' }],
+    ['apartment less than €300,000', { price: { max: 300000 }, propertyType: 'apartment' }],
+    ['apartment cheaper than 300k', { price: { max: 300000 }, propertyType: 'apartment' }],
+    ['apartment up to €300,000', { price: { max: 300000 }, propertyType: 'apartment' }],
     ['house between 200k and 400k', { price: { min: 200000, max: 400000 } }],
     ['house from 200k to 400k', { price: { min: 200000, max: 400000 } }],
     ['house 200k-400k', { price: { min: 200000, max: 400000 } }],
-    ['villa over 1.2m', { price: { min: 1_200_000 } }],
-    ['villa over 1.2 million', { price: { min: 1_200_000 } }],
+    ['villa over 1.2m', { price: { min: 1_200_000 }, propertyType: 'villa' }],
+    ['villa over 1.2 million', { price: { min: 1_200_000 }, propertyType: 'villa' }],
     ['cheap house in France', { country: 'france', price: { max: 250000 } }],
     ['3 bedroom house spain', { country: 'spain', beds: { exact: 3 } }],
     ['3+ bedroom house spain', { country: 'spain', beds: { min: 3 } }],
@@ -36,8 +37,8 @@ describe('parseSearchIntent — comparator correctness', () => {
     ['over 3 bedrooms spain', { country: 'spain', beds: { min: 4 } }],
     ['between 2 and 4 bedrooms spain', { country: 'spain', beds: { min: 2, max: 4 } }],
     ['from 2 to 4 bedrooms spain', { country: 'spain', beds: { min: 2, max: 4 } }],
-    ['2br apartment', { beds: { exact: 2 } }],
-    ['2 br apartment', { beds: { exact: 2 } }],
+    ['2br apartment', { beds: { exact: 2 }, propertyType: 'apartment' }],
+    ['2 br apartment', { beds: { exact: 2 }, propertyType: 'apartment' }],
   ] as const)('%s', (q, expected) => {
     expect(intentOf(q)).toEqual(expected);
   });
@@ -58,8 +59,16 @@ describe('parseSearchIntent — comparator correctness', () => {
 describe('getSearchPlan — residual tokens', () => {
   it('strips commas so AND-gate looks for "pool" not "pool,"', () => {
     const plan = getSearchPlan('Villa with pool, Costa del Sol');
-    expect(plan.scoringTerms).toEqual(['villa', 'pool', 'costa', 'sol']);
+    expect(plan.scoringTerms).toEqual(['pool', 'costa', 'sol']);
     expect(plan.scoringTerms).not.toContain('pool,');
+    expect(plan.intent.propertyType).toBe('villa');
+  });
+
+  it('treats apartment as a title-type filter, not an AND keyword on description', () => {
+    const plan = getSearchPlan('apartment cheaper than 300k');
+    expect(plan.intent.propertyType).toBe('apartment');
+    expect(plan.scoringTerms).not.toContain('apartment');
+    expect(plan.handled.has('apartment')).toBe(true);
   });
 });
 
@@ -69,15 +78,18 @@ describe('searchProperties — full-corpus structured filters have zero violatio
   it.each([
     {
       q: 'apartment under €300,000',
-      check: (p: (typeof all)[0]) => p.price <= 300000,
+      check: (p: (typeof all)[0]) =>
+        p.price <= 300000 && inferPropertyType(p.title) === 'apartment',
     },
     {
       q: 'apartment less than €300,000',
-      check: (p: (typeof all)[0]) => p.price <= 300000,
+      check: (p: (typeof all)[0]) =>
+        p.price <= 300000 && inferPropertyType(p.title) === 'apartment',
     },
     {
       q: 'apartment cheaper than 300k',
-      check: (p: (typeof all)[0]) => p.price <= 300000,
+      check: (p: (typeof all)[0]) =>
+        p.price <= 300000 && inferPropertyType(p.title) === 'apartment',
     },
     {
       q: 'house between 200k and 400k',

@@ -6,6 +6,18 @@ describe('country guides', () => {
     expect(listGuideCountries()).toContain('spain');
   });
 
+  it('lists portugal', () => {
+    expect(listGuideCountries()).toContain('portugal');
+  });
+
+  it('loads portugal guide with disclaimer and sources', () => {
+    const g = getCountryGuide('portugal');
+    expect(g).toBeTruthy();
+    expect(g!.sections.length).toBeGreaterThan(2);
+    expect(g!.disclaimer.toLowerCase()).toContain('not legal');
+    expect(g!.sources.some((s) => s.url.includes('gov.uk'))).toBe(true);
+  });
+
   it('loads spain guide with disclaimer and sources', () => {
     const g = getCountryGuide('spain');
     expect(g).toBeTruthy();

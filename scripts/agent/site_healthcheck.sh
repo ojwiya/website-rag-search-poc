@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Smoke homepage + search + properties + spain guide.
+# Smoke homepage + search + properties + country guides.
 # Default: local. For prod: BASE_URL=https://website-rag-search-poc.vercel.app ./site_healthcheck.sh
-# Until mvp-1 is deployed, prod /api/guides/spain will 404 — that is expected.
 set -euo pipefail
 BASE_URL="${BASE_URL:-http://127.0.0.1:3000}"
 fail=0
@@ -24,5 +23,7 @@ check "/api/search?q=villa"
 check "/api/properties?limit=1"
 check "/api/guides/spain"
 check "/guides/spain"
+check "/api/guides/portugal"
+check "/guides/portugal"
 
 exit "$fail"

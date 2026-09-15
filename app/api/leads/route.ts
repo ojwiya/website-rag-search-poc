@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { recordEvent } from '@/lib/event-log';
 
 export type LeadKind = 'waitlist' | 'request_intro';
 
@@ -13,13 +12,6 @@ interface LeadBody {
   source?: string;
   country?: string;
   consent?: boolean;
-}
-
-function appendLead(entry: Record<string, unknown>) {
-  const dir = path.join(process.cwd(), 'data', 'leads');
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  const file = path.join(dir, 'leads.jsonl');
-  fs.appendFileSync(file, `${JSON.stringify(entry)}\n`, 'utf-8');
 }
 
 /**
@@ -59,14 +51,7 @@ export async function POST(request: Request) {
         : 'Waitlist / feedback only.',
   };
 
-  try {
-    appendLead(entry);
-  } catch {
-    return NextResponse.json(
-      { error: 'Unable to store lead in this environment' },
-      { status: 503 }
-    );
-  }
+  await recordEvent({ ...entry, kind: 'lead', leadKind: kind });
 
   return NextResponse.json({ ok: true, lead: entry });
 }

@@ -1,0 +1,52 @@
+{
+  "country": "portugal",
+  "title": "Buying property in Portugal as a foreign buyer",
+  "updated_at": "2026-09-15",
+  "disclaimer": "Educational overview only. Not legal, tax, or financial advice. Rules and rates change; verify with a Portuguese lawyer, tax adviser, and regulated currency provider before you commit.",
+  "sections": [
+    {
+      "id": "who-can-buy",
+      "title": "Who can buy",
+      "body": "Foreign buyers, including many UK and other non-resident purchasers, can generally buy residential property in Portugal. Ownership does not by itself give you the right to live there. Visas and residence cards are a separate process through Portuguese authorities (AIMA and the consulate). You will normally need a Portuguese tax number (NIF) before contracts, completion, and tax filings."
+    },
+    {
+      "id": "process",
+      "title": "Typical purchase steps",
+      "body": "1) Shortlist and viewings. 2) Promise to purchase / CPCV with a deposit (often non-refundable if you walk away without a contract exit, so take advice first). 3) Due diligence via a lawyer registered with the Ordem dos Advogados (title, debts, licences, condominium). 4) Sign the escritura at a notary and register the property. Some notaries offer Casa Simples, Casa Segura as a one-stop purchase path. Timelines vary by region and whether the home is resale or new-build."
+    },
+    {
+      "id": "costs",
+      "title": "Costs and taxes (ballpark)",
+      "body": "Budget beyond the headline price for IMT (municipal transfer tax), stamp duty, notary, land registry, lawyer fees, and possible agent fees. IMT depends on use (own home vs second home), location (mainland vs islands), and the higher of deed price or taxable value. Do not treat a blog percentage as your bill. Annual IMI is separate and billed after you own the property."
+    },
+    {
+      "id": "legal",
+      "title": "Lawyer and notary",
+      "body": "Use an independent lawyer acting for you, not only the seller. They should check ownership, encumbrances, planning, and condominium rules. The notary formalises the deed; registration perfects your title. UK buyers should confirm whether a fiscal representative or electronic tax notifications are required once a Portuguese tax relationship exists."
+    },
+    {
+      "id": "fx",
+      "title": "Currency and transfers",
+      "body": "If your funds are in GBP or another currency, exchange-rate moves between reservation and completion can change the real cost in your home currency. Many buyers use a specialist FX provider for deposits and completion payments, and plan transfer timing early."
+    },
+    {
+      "id": "checklist",
+      "title": "Quick checklist",
+      "body": "NIF · Independent lawyer (Ordem dos Advogados) · Full cost schedule including IMT and stamp duty · Title / licence / condominium checks · FX plan for each payment milestone · Confirm what is included (furniture, parking, storage) · Visa/residency path if you intend to stay beyond visitor limits."
+    }
+  ],
+  "sources": [
+    {
+      "label": "UK government: living in Portugal",
+      "url": "https://www.gov.uk/guidance/living-in-portugal"
+    },
+    {
+      "label": "gov.pt: purchase and sale of real estate (EU citizens)",
+      "url": "https://www2.gov.pt/en/cidadaos-europeus-viajar-viver-e-fazer-negocios-em-portugal/viver-em-portugal/compra-e-venda-de-imoveis-em-portugal-cidadaos-europeus-"
+    },
+    {
+      "label": "Your Overseas Home: how to get a NIF in Portugal",
+      "url": "https://www.youroverseashome.com/portugal/articles/how-to-get-nif-portugal/"
+    }
+  ]
+}

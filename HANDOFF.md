@@ -1,6 +1,6 @@
 # HANDOFF — website-rag-search-poc ("Homes in the Sun")
 
-Portable summary for a new session. Last updated: **2026-08-27**.
+Portable summary for a new session. Last updated: **2026-09-15**.
 
 ## What this is
 
@@ -29,31 +29,14 @@ Call these with the Skill tool before acting:
 - **Do not use:** Grok 4.6 High Fast, Grok 4.6 Extra High (cost).
 - Grok 4.6 Medium may not be in the subagent launcher; High is the fallback for large work.
 
-## Branch & git (as of 2026-08-27)
+## Branch & git (as of 2026-09-15)
 
-- Working branch: **`mvp-1`** (tracks `origin/mvp-1`, **ahead 1** at `c67d1fc`).
-- Production: https://website-rag-search-poc.vercel.app
-- **Most search/Milvus/oxlint/skills work is uncommitted.** Do not assume Vercel has Zilliz or Oxlint CI has run on origin.
-- Last pushed product commits: `8d4339f` (MVP-1), `a7cafdd` (footer `v0.1.0 · sha`). Local extra commit: `c67d1fc` OpenWiki.
+- Working branch: **`mvp-1`** (tracks `origin/mvp-1`).
+- Production: https://website-rag-search-poc.vercel.app — footer **v0.1.0 · 03300fa** until the 15 Sep type-filter / Portugal / event-log commit is redeployed.
+- Vercel Production env has `ZILLIZ_URI`, `ZILLIZ_COLLECTION`, and sensitive `ZILLIZ_TOKEN` (preview too). Token was not added to Development (Vercel rejects `--sensitive` there).
 - Do **not** commit `.env.local` / tokens. `.gitignore` has `.env` and `.env.*`.
 
-Uncommitted / untracked (high signal):
-
-- `lib/rag.ts` — comparators, word-boundary cheap vs cheaper, punctuation-stripped tokens
-- `lib/milvus.ts` — Zilliz REST BM25 + `searchListings`
-- `lib/vector-index.ts` — local TF-IDF fallback
-- `app/api/properties/route.ts`, `app/api/search/route.ts` — async `searchListings`
-- `app/page.tsx`, `app/properties/[id]/page.tsx` — logo `Link` (Oxlint nextjs rule)
-- `scripts/rag/shed_and_embed.py` — restore full snapshot + TF-IDF + Milvus upsert
-- `rag/properties_data.json` (~11,960, ~31MB), `rag/vector-index.json` (~12MB)
-- tests: `lib/search-correctness.test.ts`, goldens (`cheaper than 300k`, 100% beds)
-- Oxlint: `.oxlintrc.json`, `package.json` `lint`/`check`, `.github/workflows/code-checks.yml`
-- Project skills: `skills/` and `.agents/skills/anti-ui-slop/`
-- OpenWiki search pages
-
 `rag/properties_data.full.json` is local backup (gitignored). `venv/` is local pymilvus (gitignored).
-
-`skills/skill-doctor/assets/pierre-diffs.js` is **~1.1MB** vendored; exclude from commit unless Bob wants the full skill-doctor bundle.
 
 ## Search architecture (current)
 
@@ -65,6 +48,7 @@ Not Chroma (101MB, dropped). Not in-process-only.
    - **`cheap` is word-boundary** so `cheaper than 300k` is max €300k, not the €250k cheap cap.
    - Query tokens strip leading/trailing punctuation (`pool,` → `pool`).
    - Comparator tokens (`than`, `between`) are consumed so AND-logic does not require them in listing text.
+   - **`apartment`/`flat`/`villa` set `propertyType`** (title via `inferPropertyType`) and are consumed so they are not AND-keywords on description. `house` stays generic. Local totals: `apartment cheaper than 300k` **1952** (was 2460); `Villa with pool, Costa del Sol` **723** (was 1432). Zilliz has no type scalar; filter runs after hydration.
 2. **Retrieve/rank** — `searchListings` in `lib/milvus.ts`
    - If `ZILLIZ_TOKEN` set: Zilliz BM25 on residual text + scalar `filter` (`price`/`bedrooms`/`country`), then hydrate from JSON + AND-gate.
    - If unset or Zilliz errors: local TF-IDF (`rag/vector-index.json`) via `searchProperties`.
@@ -85,7 +69,7 @@ ZILLIZ_COLLECTION=listings
 
 Never `NEXT_PUBLIC_*`. Never paste the token into chat.
 
-**Vercel:** Settings → Environment Variables (Production) — **not done yet**. Redeploy after adding.
+**Vercel:** Production + Preview have `ZILLIZ_URI`, `ZILLIZ_TOKEN` (sensitive), `ZILLIZ_COLLECTION`. Redeployed 15 Sep 2026 (`03300fa` in footer). Optional next env: `METRICS_WEBHOOK_URL` for durable click/lead ingest.
 
 ## Local ingest (already run 2026-08-25)
 
@@ -124,9 +108,9 @@ BASE_URL=http://127.0.0.1:3002 python3 scripts/agent/probe_search_correctness.py
 
 Goldens: `docs/agent-ops/golden-queries.json`. Structured price/bed/country filters must hold on **every** returned row (not a 50% sample).
 
-Last verified 2026-08-27: **oxlint clean**, **123/123 Vitest**.
+Last verified 2026-09-15: **oxlint clean**, **129/129 Vitest**.
 
-NLP audit 2026-08-26 (local TF-IDF + live Zilliz on :3002): comparators are correct on the full corpus. Remaining precision: `apartment` is an AND keyword on description, so some land/houses that mention apartments can rank in. Do not judge AND-gate from public API snippets. Full write-up: `openwiki/testing/nlp-search-correctness.md`.
+NLP audit 2026-08-26 plus type-filter 2026-09-15: comparators hold on the full corpus. `apartment`/`villa` are title-type filters (1952 / 723 local totals). Do not judge AND-gate from public API snippets. Full write-up: `openwiki/testing/nlp-search-correctness.md`.
 
 ## Key paths
 
@@ -140,7 +124,7 @@ NLP audit 2026-08-26 (local TF-IDF + live Zilliz on :3002): comparators are corr
 | M0 adapter | `lib/sources/yoh-snapshot.ts` |
 | Thin public rows | `lib/public-listing.ts` |
 | Guides | `content/country-guides/`, `lib/guides.ts` |
-| Redirect / leads | `GET /api/redirect`, `POST /api/leads` |
+| Redirect / leads | `GET /api/redirect`, `POST /api/leads`, `lib/event-log.ts` |
 | Oxlint | `.oxlintrc.json`, `.github/workflows/code-checks.yml` |
 | Project skills | `skills/`, `.agents/skills/anti-ui-slop/` |
 | NLP search correctness audit | `openwiki/testing/nlp-search-correctness.md` |
@@ -151,8 +135,12 @@ Buyer-agent contracts (no chat UI): `search`, `get_listing`, `get_country_guide`
 ## Hermes
 
 - Profile: **`homes-in-the-sun`** (`~/.hermes/profiles/homes-in-the-sun`)
-- Start gateway: `hermes -p homes-in-the-sun gateway start`
-- Crons: healthcheck, index-governance, search-quality, eng-triage, content-guides, leads-inbox, disk-janitor — see previous HANDOFF / `docs/agent-ops/`
+- Standalone gateway **cannot** run: it shares Telegram/Discord bot tokens with `default`. Those two tokens are commented out in the homes profile `.env`.
+- **15 Sep 2026:** `hermes gateway migrate --multiplex` so the **default** gateway serves both profiles. Crons for homes jobs catch-up-fired after 32 days idle.
+- Do not `hermes -p homes-in-the-sun gateway start --force` (token conflict / crash loop).
+- Rollback: `hermes gateway migrate --standalone` (only after restoring homes bot tokens).
+- Healthcheck script now also hits `/api/guides/portugal`. Portugal 404s on production until this branch is deployed.
+- Catch-up on 15 Sep: script jobs `homes-site-healthcheck` and `homes-disk-janitor` **ok**. Agent jobs (`search-quality`, `eng-triage`, `content-guides`, `leads-inbox`, `index-governance`) **blocked_config** — pinned to Nous Portal with no token. Re-pin those jobs to a provider that has credentials, or run `hermes auth`.
 
 ## Data / legal
 
@@ -162,11 +150,11 @@ Buyer-agent contracts (no chat UI): `search`, `get_listing`, `get_country_guide`
 
 ## Open follow-ups (next agent)
 
-1. **Commit** uncommitted search/Milvus/oxlint/docs/skills (if Bob wants it) — exclude `.env.local`, `venv/`, `properties_data.full.json`, runtime `data/*.jsonl`. Consider excluding `skills/skill-doctor/assets/pierre-diffs.js` (1.1MB).
-2. **Vercel:** add `ZILLIZ_URI` / `ZILLIZ_TOKEN` / `ZILLIZ_COLLECTION`, then redeploy `mvp-1`. Prod will 404/old search until then.
-3. Optional: copy `.env.local` → `.env` only if some tool requires that name; Next and `shed_and_embed.py` already read `.env.local`.
-4. Start Hermes gateway for crons.
-5. Playwright on a normal desktop if Chromium is blocked in this environment.
-6. M1/M2 Roccabox adapter + Phase-2 partner lead forward (later HANDOFF items).
+1. **Redeploy production** after this commit so `/guides/portugal` is 200 and apartment/villa type-filter goldens match git (1952 / 723 on local TF-IDF). Confirm footer SHA moved off `03300fa`.
+2. Optional: set Vercel `METRICS_WEBHOOK_URL` to a sheet/KV ingest. JSONL still dies on serverless; stdout `homes.event` is the current prod ledger.
+3. Confirm Hermes catch-up jobs finished cleanly (`hermes -p homes-in-the-sun cron list`). Healthcheck should now pass Spain; Portugal 404 until redeploy.
+4. Playwright on a normal desktop if Chromium is blocked in this environment.
+5. M1/M2 Roccabox adapter — still **blocked** on BD/allowlist. Do not write `lib/sources/roccabox.ts` until that decision.
+6. Phase-2 partner lead forward — contracts first; do not auto-email `request_intro`.
 7. Spatial radius / true recency still out of scope (no gazetteer; no listing date).
-8. Optional product: treat `apartment`/`villa` as title-type filters instead of description AND-keywords (388/2460 land/houses leak into apartment queries).
+8. Cottage/penthouse/townhouse as type filters is still open; only apartment/villa landed.

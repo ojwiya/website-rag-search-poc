@@ -42,6 +42,7 @@ const fixtures: Property[] = [
   // --- Featureless 3-bed Spain house (to test bedroom filter) ---
   prop({ id: 10, title: 'House in Murcia', country_slug: 'spain', locationName: 'Murcia', price: 200000, eurPrice: 200000, description: 'family house', bedrooms: 3 }),
   prop({ id: 11, title: 'House in Murcia', country_slug: 'spain', locationName: 'Murcia', price: 180000, eurPrice: 180000, description: 'family house', bedrooms: 2 }),
+  prop({ id: 12, title: 'Villa in Cascais', country_slug: 'portugal', locationName: 'Cascais', price: 1200000, eurPrice: 1200000, description: 'luxury villa with pool', bedrooms: 4 }),
 ];
 
 // ---------------------------------------------------------------------------
@@ -66,12 +67,16 @@ describe('searchProperties — price intent in natural language', () => {
     expect(prices).toEqual([...prices].sort((a, b) => a - b));
   });
 
-  it('"luxury villa" returns ONLY properties >= €1M', () => {
+  it('"luxury villa" returns ONLY villas >= €1M', () => {
     const r = searchProperties(fixtures, 'luxury villa', 20);
     expect(r.length).toBeGreaterThan(0);
-    for (const p of r) expect(p.eurPrice).toBeGreaterThanOrEqual(1000000);
+    for (const p of r) {
+      expect(p.eurPrice).toBeGreaterThanOrEqual(1000000);
+      expect(inferPropertyType(p.title)).toBe('villa');
+    }
     const ids = r.map((p) => p.id);
-    expect(ids).toContain(8); // €1.5M Portugal apartment (villa/luxury match)
+    expect(ids).toContain(12); // €1.2M Cascais villa
+    expect(ids).not.toContain(8); // luxury apartment is not a villa
     expect(ids).not.toContain(4); // €425k villa excluded by luxury floor
   });
 

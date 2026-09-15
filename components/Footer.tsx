@@ -25,6 +25,11 @@ export function Footer() {
               </Link>
             </li>
             <li>
+              <Link href="/guides/portugal" className="hover:text-white transition-colors" style={{ color: '#8FA0B8' }}>
+                Buying guide (Portugal)
+              </Link>
+            </li>
+            <li>
               <a href="#faq" className="hover:text-white transition-colors" style={{ color: '#8FA0B8' }}>
                 FAQ
               </a>
