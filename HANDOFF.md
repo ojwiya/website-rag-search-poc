@@ -32,7 +32,7 @@ Call these with the Skill tool before acting:
 ## Branch & git (as of 2026-09-15)
 
 - Working branch: **`mvp-1`** (tracks `origin/mvp-1`).
-- Production: https://website-rag-search-poc.vercel.app — footer **v0.1.0 · 03300fa** until the 15 Sep type-filter / Portugal / event-log commit is redeployed.
+- Production: https://website-rag-search-poc.vercel.app — footer **v0.1.0 · f227787** (promoted 15 Sep 2026; type-filter + Portugal guide).
 - Vercel Production env has `ZILLIZ_URI`, `ZILLIZ_COLLECTION`, and sensitive `ZILLIZ_TOKEN` (preview too). Token was not added to Development (Vercel rejects `--sensitive` there).
 - Do **not** commit `.env.local` / tokens. `.gitignore` has `.env` and `.env.*`.
 
@@ -69,7 +69,7 @@ ZILLIZ_COLLECTION=listings
 
 Never `NEXT_PUBLIC_*`. Never paste the token into chat.
 
-**Vercel:** Production + Preview have `ZILLIZ_URI`, `ZILLIZ_TOKEN` (sensitive), `ZILLIZ_COLLECTION`. Redeployed 15 Sep 2026 (`03300fa` in footer). Optional next env: `METRICS_WEBHOOK_URL` for durable click/lead ingest.
+**Vercel:** Production + Preview have `ZILLIZ_URI`, `ZILLIZ_TOKEN` (sensitive), `ZILLIZ_COLLECTION`. Redeployed 15 Sep 2026 (`f227787` in footer). Optional next env: `METRICS_WEBHOOK_URL` for durable click/lead ingest.
 
 ## Local ingest (already run 2026-08-25)
 
@@ -108,7 +108,7 @@ BASE_URL=http://127.0.0.1:3002 python3 scripts/agent/probe_search_correctness.py
 
 Goldens: `docs/agent-ops/golden-queries.json`. Structured price/bed/country filters must hold on **every** returned row (not a 50% sample).
 
-Last verified 2026-09-15: **oxlint clean**, **129/129 Vitest**.
+Last verified 2026-09-15: **oxlint clean**, **129/129 Vitest**. Prod `f227787`: healthcheck 7/7 200 (incl. Portugal), goldens 8/8, type-filter totals 1952 / 723.
 
 NLP audit 2026-08-26 plus type-filter 2026-09-15: comparators hold on the full corpus. `apartment`/`villa` are title-type filters (1952 / 723 local totals). Do not judge AND-gate from public API snippets. Full write-up: `openwiki/testing/nlp-search-correctness.md`.
 
@@ -139,7 +139,7 @@ Buyer-agent contracts (no chat UI): `search`, `get_listing`, `get_country_guide`
 - **15 Sep 2026:** `hermes gateway migrate --multiplex` so the **default** gateway serves both profiles. Crons for homes jobs catch-up-fired after 32 days idle.
 - Do not `hermes -p homes-in-the-sun gateway start --force` (token conflict / crash loop).
 - Rollback: `hermes gateway migrate --standalone` (only after restoring homes bot tokens).
-- Healthcheck script now also hits `/api/guides/portugal`. Portugal 404s on production until this branch is deployed.
+- Healthcheck script also hits `/api/guides/portugal`. Production Portugal is **200** as of `f227787`.
 - Catch-up on 15 Sep: script jobs `homes-site-healthcheck` and `homes-disk-janitor` **ok**. Agent jobs (`search-quality`, `eng-triage`, `content-guides`, `leads-inbox`, `index-governance`) **blocked_config** — pinned to Nous Portal with no token. Re-pin those jobs to a provider that has credentials, or run `hermes auth`.
 
 ## Data / legal
@@ -150,11 +150,10 @@ Buyer-agent contracts (no chat UI): `search`, `get_listing`, `get_country_guide`
 
 ## Open follow-ups (next agent)
 
-1. **Redeploy production** after this commit so `/guides/portugal` is 200 and apartment/villa type-filter goldens match git (1952 / 723 on local TF-IDF). Confirm footer SHA moved off `03300fa`.
-2. Optional: set Vercel `METRICS_WEBHOOK_URL` to a sheet/KV ingest. JSONL still dies on serverless; stdout `homes.event` is the current prod ledger.
-3. Confirm Hermes catch-up jobs finished cleanly (`hermes -p homes-in-the-sun cron list`). Healthcheck should now pass Spain; Portugal 404 until redeploy.
-4. Playwright on a normal desktop if Chromium is blocked in this environment.
-5. M1/M2 Roccabox adapter — still **blocked** on BD/allowlist. Do not write `lib/sources/roccabox.ts` until that decision.
-6. Phase-2 partner lead forward — contracts first; do not auto-email `request_intro`.
-7. Spatial radius / true recency still out of scope (no gazetteer; no listing date).
-8. Cottage/penthouse/townhouse as type filters is still open; only apartment/villa landed.
+1. Optional: set Vercel `METRICS_WEBHOOK_URL` to a sheet/KV ingest. JSONL still dies on serverless; stdout `homes.event` is the current prod ledger.
+2. Confirm Hermes catch-up jobs finished cleanly (`hermes -p homes-in-the-sun cron list`). Healthcheck should now pass Spain and Portugal.
+3. Playwright prod smoke: 8/9 on 15 Sep (`f227787`). The detail-page test still times out waiting for heading `/Buying property in Spain/` after search `villa costa del sol` — Spain panel is present on listing `1246805`; likely first-card / locator brittleness, not a missing guide.
+4. M1/M2 Roccabox adapter — still **blocked** on BD/allowlist. Do not write `lib/sources/roccabox.ts` until that decision.
+5. Phase-2 partner lead forward — contracts first; do not auto-email `request_intro`.
+6. Spatial radius / true recency still out of scope (no gazetteer; no listing date).
+7. Cottage/penthouse/townhouse as type filters is still open; only apartment/villa landed.
