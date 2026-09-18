@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { buildRedirectPath } from '@/lib/urls';
 
 export function PropertyActions({
@@ -13,6 +14,7 @@ export function PropertyActions({
   source?: string;
   sourceName?: string;
 }) {
+  const [copied, setCopied] = useState(false);
   const label = sourceName ? `View full listing on ${sourceName}` : 'View full listing on source site';
   const href =
     canonicalUrl &&
@@ -40,12 +42,18 @@ export function PropertyActions({
       <button
         type="button"
         className="px-6 py-3 border text-sm font-semibold rounded-pill transition-colors"
-        style={{ borderColor: '#DCE6F5', color: '#1E3A5F' }}
-        onClick={() => {
-          navigator.clipboard.writeText(window.location.href);
+        style={{ borderColor: '#DCE6F5', color: copied ? '#2B6CF6' : '#1E3A5F' }}
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(window.location.href);
+            setCopied(true);
+            window.setTimeout(() => setCopied(false), 2000);
+          } catch {
+            setCopied(false);
+          }
         }}
       >
-        Share this page
+        {copied ? 'Copied!' : 'Share this page'}
       </button>
     </div>
   );

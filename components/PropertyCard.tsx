@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 import { Property } from '@/lib/rag';
 import { propertyToCanonical } from '@/lib/sources/yoh-snapshot';
 
@@ -11,11 +10,26 @@ const currencySymbols: Record<string, string> = {
   USD: '$',
 };
 
+export function PropertyCardSkeleton() {
+  return (
+    <div className="bg-card border rounded-lg p-2.5 animate-pulse" style={{ borderColor: '#E7EEF8' }}>
+      <div className="aspect-square rounded-md" style={{ background: '#E7EEF8' }} />
+      <div className="pt-3 px-1 space-y-2">
+        <div className="h-4 rounded" style={{ background: '#E7EEF8', width: '70%' }} />
+        <div className="h-3 rounded" style={{ background: '#E7EEF8', width: '50%' }} />
+        <div className="flex justify-between items-center mt-2">
+          <div className="h-5 rounded" style={{ background: '#E7EEF8', width: '35%' }} />
+          <div className="h-4 rounded" style={{ background: '#E7EEF8', width: '28%' }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function PropertyCard({ property }: { property: Property }) {
   const canonical = propertyToCanonical(property);
   const symbol = currencySymbols[canonical.currency] || '€';
   const price = `${symbol}${canonical.price.toLocaleString('en-US')}`;
-  const [favorited, setFavorited] = useState(false);
 
   const hasPool =
     property.hasPool === true ||
@@ -28,7 +42,7 @@ export function PropertyCard({ property }: { property: Property }) {
     <div className="group bg-card border rounded-lg p-2.5 transition-shadow duration-200 hover:bg-card-hover hover:border-card-hoverBorder hover:shadow-cardHover">
       <Link href={`/properties/${property.id}`} className="block">
         {/* Photo — square, 12px radius */}
-        <div className="relative aspect-square rounded-md overflow-hidden bg-card">
+        <div className="relative aspect-square rounded-md overflow-hidden shrink-0" style={{ background: '#E7EEF8' }}>
           {property.thumbnail_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -38,9 +52,7 @@ export function PropertyCard({ property }: { property: Property }) {
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-faint text-sm">
-              No image
-            </div>
+            <div className="absolute inset-0" aria-hidden="true" />
           )}
 
           {/* Listing tag pill (top-left) — only if present */}
@@ -53,30 +65,6 @@ export function PropertyCard({ property }: { property: Property }) {
             </span>
           )}
 
-          {/* Favorite heart (top-right) */}
-          <button
-            type="button"
-            aria-label={favorited ? 'Remove from favorites' : 'Save to favorites'}
-            aria-pressed={favorited}
-            onClick={(e) => {
-              e.preventDefault();
-              setFavorited((v) => !v);
-            }}
-            className="absolute top-2.5 right-2.5 p-2 rounded-full transition-transform hover:scale-110 active:scale-95"
-            style={{ background: 'rgba(30,58,95,0.28)' }}
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 32 32"
-              className={favorited ? 'text-primary' : 'text-white'}
-              fill={favorited ? 'currentColor' : 'none'}
-              style={{ strokeWidth: 2 }}
-            >
-              <path d="M16 28c7-4.35 12-10 12-15a6 6 0 0 0-11-3.5A6 6 0 0 0 4 13c0 5 5 10.65 12 15z" />
-            </svg>
-          </button>
-
           {/* Photo-count pill (bottom-right) */}
           {property.image_count > 0 && (
             <span
@@ -87,12 +75,6 @@ export function PropertyCard({ property }: { property: Property }) {
             </span>
           )}
 
-          {/* Carousel dots (bottom-center) */}
-          <span className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-white/90" />
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.5)' }} />
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.5)' }} />
-          </span>
         </div>
       </Link>
 
@@ -120,11 +102,6 @@ export function PropertyCard({ property }: { property: Property }) {
           ]
             .filter(Boolean)
             .join(' · ')}
-        </p>
-
-        {/* Source attribution — referral aggregator, not "verified" claim */}
-        <p className="text-faint text-[12px] mt-1.5">
-          Via {canonical.source_name}
         </p>
 
         {/* Price + View details */}

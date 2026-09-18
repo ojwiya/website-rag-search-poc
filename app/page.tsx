@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type FormEvent } from 'react';
 import Link from 'next/link';
-import { PropertyCard } from '@/components/PropertyCard';
+import { PropertyCard, PropertyCardSkeleton } from '@/components/PropertyCard';
 import { BrandLogo } from '@/components/BrandLogo';
 import { LeadForm } from '@/components/LeadForm';
 import { Property } from '@/lib/rag';
@@ -30,9 +30,10 @@ const FAQS = [
 
 export default function Home() {
   const [properties, setProperties] = useState<Property[]>([]);
-  const [total, setTotal] = useState(0);
+  const [displayTotal, setDisplayTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
+  const [activeQuery, setActiveQuery] = useState('');
   const [sort, setSort] = useState('best');
   const [page, setPage] = useState(1);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -40,7 +41,7 @@ export default function Home() {
   const fetchProperties = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams();
-    if (query.trim()) params.set('q', query);
+    if (activeQuery.trim()) params.set('q', activeQuery);
     params.set('page', page.toString());
     params.set('limit', '20');
     params.set('sort', sort);
@@ -51,21 +52,30 @@ export default function Home() {
       const results = (data.properties || []) as Property[];
 
       setProperties(results);
-      setTotal(data.total || 0);
+      setDisplayTotal(data.total || 0);
     } catch (err) {
       console.error('Fetch error:', err);
     } finally {
       setLoading(false);
     }
-  }, [query, sort, page]);
+  }, [activeQuery, sort, page]);
 
   useEffect(() => {
-    const debounce = setTimeout(fetchProperties, 300);
-    return () => clearTimeout(debounce);
+    const id = window.requestAnimationFrame(() => {
+      void fetchProperties();
+    });
+    return () => window.cancelAnimationFrame(id);
   }, [fetchProperties]);
 
-  const start = total === 0 ? 0 : (page - 1) * 20 + 1;
-  const end = Math.min(page * 20, total);
+  const handleSearchSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    setPage(1);
+    setActiveQuery(query.trim());
+  };
+
+  const total = displayTotal ?? 0;
+  const start = displayTotal === null ? 0 : total === 0 ? 0 : (page - 1) * 20 + 1;
+  const end = displayTotal === null ? 0 : Math.min(page * 20, total);
 
   return (
     <main className="min-h-screen bg-surface-alt">
@@ -77,7 +87,8 @@ export default function Home() {
           </Link>
           <nav className="flex gap-6">
             <Link href="/" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>Browse</Link>
-            <Link href="/guides/spain" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>Buying guide</Link>
+            <Link href="/guides/spain" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>Spain guide</Link>
+            <Link href="/guides/portugal" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>Portugal guide</Link>
           </nav>
         </div>
       </header>
@@ -95,32 +106,32 @@ export default function Home() {
         </p>
 
         {/* Search pill */}
-        <div className="max-w-2xl mx-auto mt-7 flex items-center gap-2 bg-white border rounded-pill shadow-pill pl-6 pr-2 py-2" style={{ borderColor: '#DCE6F5' }}>
-          <svg className="shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2B6CF6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <form
+          onSubmit={handleSearchSubmit}
+          className="max-w-2xl mx-auto mt-7 flex items-center gap-2 bg-white border rounded-pill shadow-pill pl-6 pr-2 py-2"
+          style={{ borderColor: '#DCE6F5' }}
+        >
+          <svg className="shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2B6CF6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
           </svg>
           <input
-            type="text"
+            type="search"
             value={query}
-            onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder={'Try "3-bed villa with pool near Marbella"...'}
             className="flex-1 px-2 py-2 bg-transparent text-heading text-sm focus:outline-none placeholder:text-faint"
           />
           <button
-            type="button"
-            aria-label="Search"
-            className="text-white rounded-pill p-2.5 transition-colors"
+            type="submit"
+            className="text-white text-sm font-semibold rounded-pill px-5 py-2.5 transition-colors"
             style={{ background: '#2B6CF6' }}
             onMouseEnter={(e) => (e.currentTarget.style.background = '#1E56D6')}
             onMouseLeave={(e) => (e.currentTarget.style.background = '#2B6CF6')}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
+            Search
           </button>
-        </div>
+        </form>
 
         {/* Example chips */}
         <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -128,7 +139,7 @@ export default function Home() {
             <button
               key={ex}
               type="button"
-              onClick={() => { setQuery(ex); setPage(1); }}
+              onClick={() => { setQuery(ex); setActiveQuery(ex); setPage(1); }}
               className="text-xs font-medium rounded-pill px-3 py-1.5 bg-white transition-colors"
               style={{ color: '#1E3A5F', border: '1px solid #DCE6F5' }}
             >
@@ -149,14 +160,20 @@ export default function Home() {
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.3-4.3" />
             </svg>
-            {query.trim() ? (
-              <span className="font-semibold" style={{ color: '#1E3A5F' }}>{`"${query.trim()}"`}</span>
+            {activeQuery.trim() ? (
+              <span className="font-semibold" style={{ color: '#1E3A5F' }}>{`"${activeQuery.trim()}"`}</span>
             ) : (
               <span className="font-semibold" style={{ color: '#1E3A5F' }}>All listings</span>
             )}
           </span>
           <span>
-            <strong style={{ color: '#1E3A5F' }}>{start}–{end}</strong> of <strong style={{ color: '#1E3A5F' }}>{total.toLocaleString()}</strong> matches
+            {displayTotal === null ? (
+              <span style={{ color: '#8A97A8' }}>Loading…</span>
+            ) : (
+              <>
+                <strong style={{ color: '#1E3A5F' }}>{start}–{end}</strong> of <strong style={{ color: '#1E3A5F' }}>{total.toLocaleString()}</strong> matches
+              </>
+            )}
           </span>
         </div>
         <select
@@ -175,7 +192,11 @@ export default function Home() {
       {/* Grid */}
       <div className="max-w-7xl mx-auto px-6 pb-12 pt-8">
         {loading ? (
-          <div className="text-center py-20" style={{ color: '#5B6B82' }}>Loading…</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8">
+            {Array.from({ length: 20 }, (_, i) => (
+              <PropertyCardSkeleton key={i} />
+            ))}
+          </div>
         ) : properties.length === 0 ? (
           <div className="text-center py-20" style={{ color: '#5B6B82' }}>No properties found. Try adjusting your search.</div>
         ) : (
@@ -212,9 +233,23 @@ export default function Home() {
       {/* Trust / guide CTA band */}
       <section className="bg-white">
         <div className="max-w-6xl mx-auto px-6 py-14 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-          <div className="aspect-[16/10] rounded-lg bg-card border overflow-hidden" style={{ borderColor: '#E7EEF8' }}>
-            {/* image slot — no stock illustration per spec; subtle placeholder */}
-            <div className="w-full h-full flex items-center justify-center text-faint text-sm">Guide preview</div>
+          <div className="aspect-[16/10] rounded-lg bg-card border overflow-hidden flex flex-col justify-center gap-4 p-8" style={{ borderColor: '#E7EEF8' }}>
+            <Link
+              href="/guides/spain"
+              className="flex items-center justify-between px-5 py-4 rounded-lg border transition-colors hover:bg-surface-alt"
+              style={{ borderColor: '#DCE6F5', color: '#1E3A5F' }}
+            >
+              <span className="font-semibold">Spain buying guide</span>
+              <span style={{ color: '#2B6CF6' }}>→</span>
+            </Link>
+            <Link
+              href="/guides/portugal"
+              className="flex items-center justify-between px-5 py-4 rounded-lg border transition-colors hover:bg-surface-alt"
+              style={{ borderColor: '#DCE6F5', color: '#1E3A5F' }}
+            >
+              <span className="font-semibold">Portugal buying guide</span>
+              <span style={{ color: '#2B6CF6' }}>→</span>
+            </Link>
           </div>
           <div>
             <span className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: '#F5A623' }}>Free guide</span>

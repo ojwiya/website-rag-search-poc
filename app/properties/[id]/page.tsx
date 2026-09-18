@@ -50,7 +50,8 @@ export default async function PropertyDetail({ params }: { params: { id: string 
           </Link>
           <nav className="flex gap-6">
             <Link href="/" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>Browse</Link>
-            <Link href="/guides/spain" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>Buying guide</Link>
+            <Link href="/guides/spain" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>Spain guide</Link>
+            <Link href="/guides/portugal" className="text-sm font-medium hover:underline" style={{ color: '#1E3A5F' }}>Portugal guide</Link>
           </nav>
         </div>
       </header>
